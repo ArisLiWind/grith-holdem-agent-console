@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GRITH™ Hold'em Agents</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div class="brand-lockup" aria-label="GRITH Hold'em Agents">
+          <span class="brand-mark">G</span>
+          <div>
+            <h1>GRITH™ HOLDEM</h1>
+            <p data-i18n="brandSub">MULTI-AGENT POKER OPERATIONS</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button id="soundToggle" class="icon-button" type="button" aria-label="Toggle sound">♪</button>
+          <button id="languageToggle" class="share-button compact-button" type="button">中文</button>
+          <button id="helpToggle" class="icon-button" type="button" aria-label="Toggle rules" aria-expanded="false">?</button>
+          <button id="shareButton" class="share-button" type="button" data-i18n="shareHand">Share Hand</button>
+        </div>
+      </header>
+
+      <section id="helpPanel" class="help-panel" hidden>
+        <div>
+          <span class="panel-label" data-i18n="howToPlay">How To Play</span>
+          <h2 data-i18n="helpTitle">Texas Hold'em with agent-assisted decisions.</h2>
+        </div>
+        <ol>
+          <li data-i18n="helpOne">You receive two private cards. Five community cards arrive across flop, turn, and river.</li>
+          <li data-i18n="helpTwo">Use any five-card combination from your two cards and the board to make the best hand.</li>
+          <li data-i18n="helpThree">Three local agents estimate strength, risk, and recommended action while automated opponents play against you.</li>
+        </ol>
+      </section>
+
+      <section class="score-strip" aria-label="Table state">
+        <div>
+          <span data-i18n="handNo">Hand</span>
+          <strong id="handNumber">#1</strong>
+        </div>
+        <div>
+          <span data-i18n="street">Street</span>
+          <strong id="street">Preflop</strong>
+        </div>
+        <div>
+          <span data-i18n="pot">Pot</span>
+          <strong id="pot">0</strong>
+        </div>
+        <div>
+          <span data-i18n="stack">Stack</span>
+          <strong id="heroStack">1000</strong>
+        </div>
+        <div>
+          <span data-i18n="bestHand">Best</span>
+          <strong id="bestHand">High Card</strong>
+        </div>
+      </section>
+
+      <section class="arena" aria-label="Poker arena">
+        <aside class="mission-panel">
+          <div class="panel-label" data-i18n="agentDesk">Agent Desk</div>
+          <h2 data-i18n="ruleTitle">Read the table. Ask the agents. Choose your line.</h2>
+          <div id="agentCards" class="agent-cards"></div>
+          <div class="streak-meter" aria-hidden="true">
+            <span id="equityFill"></span>
+          </div>
+          <p id="statusText" data-i18n="readyStatus">Deal a new hand to start the table.</p>
+        </aside>
+
+        <div class="table-zone">
+          <div class="poker-table">
+            <div class="seat villain seat-north" id="villainNorth"></div>
+            <div class="board-zone">
+              <div class="panel-label" data-i18n="community">Community Cards</div>
+              <div id="communityCards" class="card-row community-row"></div>
+              <div class="pot-chip"><span data-i18n="pot">Pot</span><strong id="centerPot">0</strong></div>
+            </div>
+            <div class="seat villain seat-west" id="villainWest"></div>
+            <div class="seat villain seat-east" id="villainEast"></div>
+            <div class="seat hero-seat" id="heroSeat"></div>
+          </div>
+
+          <div class="action-bar">
+            <button id="foldButton" class="primary-button danger" type="button" data-i18n="fold">Fold</button>
+            <button id="checkButton" class="primary-button" type="button" data-i18n="checkCall">Check / Call</button>
+            <button id="raiseButton" class="primary-button raise" type="button" data-i18n="raise">Raise</button>
+            <button id="nextStreetButton" class="primary-button cyan-action" type="button" data-i18n="nextStreet">Auto Street</button>
+            <button id="newHandButton" class="primary-button" type="button" data-i18n="newHand">New Hand</button>
+          </div>
+        </div>
+
+        <aside class="leader-panel">
+          <div class="panel-label" data-i18n="decisionLog">Decision Log</div>
+          <ol id="decisionLog" class="decision-log"></ol>
+          <div class="local-db">
+            <div class="panel-label" data-i18n="localDb">Local Hand DB</div>
+            <ol id="handList" class="game-list"></ol>
+          </div>
+        </aside>
+      </section>
+
+      <section class="collection-rail" aria-label="Agent modules">
+        <div class="mini-card acid" data-i18n="rangeScout">RANGE SCOUT</div>
+        <div class="mini-card ember" data-i18n="gtoCoach">GTO COACH</div>
+        <div class="mini-card cyan" data-i18n="riskSentinel">RISK SENTINEL</div>
+        <div class="mini-card ink" data-i18n="tableMemory">TABLE MEMORY</div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
