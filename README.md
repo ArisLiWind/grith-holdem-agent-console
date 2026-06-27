@@ -1,89 +1,101 @@
-# GRITH™ Hold'em Agent Console
+# GRITH Hold'em Agent Console
 
-GRITH™ Hold'em Agent Console is a browser-based Texas Hold'em simulation and AI-agent game-control prototype. It lets a user create a poker assistant, choose its model profile, personality, strategy style, and memory mode, then enter a simulated poker room where the agent can either explain decisions or act on the player's behalf.
+GRITH Hold'em Agent Console is a static, browser-based Texas Hold'em table with a local AI-agent style decision console. It is designed as a playable product prototype: users can deal hands, read the board, ask for strategic advice, or let the assistant act for the hero seat.
 
-## Features
+The project runs entirely in the browser. There is no backend, build step, API key, or external dependency required.
 
-- Texas Hold'em flow: preflop, flop, turn, river, and showdown.
-- One human hero seat against three automated opponents.
-- Agent console:
-  - Create a named assistant.
-  - Choose model profile, personality, strategy style, and memory mode.
-  - Ask for deep natural-language advice before acting.
-  - Let the agent play the current decision automatically.
-- Multi-agent analysis panel:
-  - Custom user agent explains the core line.
-  - Range Scout estimates simulated equity from the current board.
-  - GTO Coach recommends fold, check/call, or raise based on equity and pot odds.
-  - Risk Sentinel summarizes risk level and active opponent pressure.
-- Seven-card hand evaluator for best five-card poker hand selection.
-- Natural-language hand explanations archived with hand history.
-- Local hand database stored in `localStorage`.
-- Bilingual English / Chinese UI.
-- Shareable hand summary text.
-- Static frontend only: no build step and no external dependencies.
+## What It Does
+
+- Simulates a Texas Hold'em hand from preflop through flop, turn, river, and showdown.
+- Places one hero seat against three automated opponents.
+- Shows a focused poker table with optional Rules and Agent panels.
+- Supports English and Chinese UI copy, with Chinese as the default language.
+- Explains each street with contextual guidance.
+- Displays hand rankings from Straight Flush down to High Card.
+- Evaluates the best five-card hand from seven available cards.
+- Lets the user fold, check/call, raise, auto-advance streets, or start a new hand.
+- Lets the assistant play the current decision automatically.
+- Provides local analysis agents for equity, suggested action, and risk.
+- Stores finished hand summaries in `localStorage`.
+- Generates shareable hand summary text.
+
+## Demo Flow
+
+1. Open the app in a browser.
+2. Click `新牌局` / `New Hand`.
+3. Review the hero cards, community cards, pot, stack, current street, and best hand.
+4. Open `规则说明` / `Rules` to review Texas Hold'em basics and hand rankings.
+5. Open `Agent 控制台` / `Agent` to configure the assistant profile.
+6. Click `询问建议` / `Ask Advice` for an explanation.
+7. Click `Agent 代打` / `Agent Play` or choose an action manually.
+8. Completed hands are archived locally in the hand database panel.
 
 ## Run Locally
 
-Open `index.html` directly in a browser, or run a tiny static server:
+Open `index.html` directly in a modern browser, or serve the folder with a small static server:
 
 ```bash
+cd grith-cardgame
 python3 -m http.server 3032
 ```
 
-Then open:
+Then visit:
 
 ```text
 http://127.0.0.1:3032
 ```
 
-## Gameplay
-
-1. Click **New Hand** to deal a Texas Hold'em hand.
-2. Review your two hole cards, the public board, and the agent recommendations.
-3. Configure the assistant in the right-side Agent Console.
-4. Click **Ask Advice** to receive a strategic explanation.
-5. Click **Agent Play** to let the assistant make the decision, or choose **Fold**, **Check / Call**, **Raise**, or **Auto Street** manually.
-6. Completed hands are archived in the local hand database.
-
-## Architecture
-
-The project is intentionally small and inspectable:
+## Project Structure
 
 ```text
-.
-├── index.html   # Game shell and UI panels
-├── styles.css   # GRITH visual system and responsive table layout
-├── script.js    # Poker engine, agent console, evaluator, local DB, i18n
-└── README.md
+grith-cardgame/
+├── index.html   # Static app shell and UI panels
+├── styles.css   # Responsive GRITH visual system and poker-table layout
+├── script.js    # Poker engine, local agents, evaluator, i18n, and local DB
+├── README.md    # Project documentation
+└── .gitignore
 ```
 
-## Agent Model
+## Agent System
 
-The current system runs deterministic local helper agents inside the browser. It does not place an API key in frontend code and does not call remote AI APIs directly. Model selection is represented as a configurable agent profile that influences local explanation and strategy behavior.
+The app currently uses deterministic local helper agents instead of remote AI calls.
 
-For production, connect the console to a secure backend that owns model credentials and exposes an endpoint such as:
+- `Range Scout` estimates simulated equity from the current board.
+- `GTO Coach` recommends fold, check/call, or raise from equity and pot pressure.
+- `Risk Sentinel` summarizes danger level and opponent pressure.
+- The custom assistant profile changes the tone and strategy framing of advice.
 
-```text
-POST /api/agent/decision
-```
+This keeps the prototype safe to publish as a static site because no model credential is exposed in frontend code.
 
-The frontend can send table state, player profile, memory mode, and requested model. The backend can then call an LLM, a poker solver, or both, and return:
+## Poker Engine Notes
 
-- recommended action
-- confidence
-- explanation
-- memory update
-- risk note
+- Cards are generated from a standard 52-card deck.
+- Streets follow the Texas Hold'em order: preflop, flop, turn, river, showdown.
+- The evaluator checks all five-card combinations available from hole cards plus community cards.
+- Showdown compares evaluated hand scores among active players.
+- Hand history, assistant profile, language, and memory state are persisted in browser `localStorage`.
 
-Suggested next steps:
+## Deployment
 
-- Add real betting rounds with position, legal action sizing, and side-pot handling.
-- Replace heuristic opponents with pluggable bot policies.
-- Add WebSocket multiplayer rooms.
+Because this is a static frontend, it can be deployed to any static host:
+
+- GitHub Pages
+- Vercel
+- Netlify
+- Cloudflare Pages
+- Any ordinary static file server
+
+For GitHub Pages, publish the repository root and set the entry file to `index.html`.
+
+## Roadmap
+
+- Add strict legal-action validation for blinds, position, min-raise size, and all-in states.
+- Add side-pot support.
+- Replace heuristic bots with pluggable opponent policies.
+- Add multiplayer rooms with WebSocket state sync.
 - Persist hand histories to a server database.
-- Add secure API-backed AI agents for table narration, exploit detection, and solver-backed strategy.
-- Deploy through GitHub Pages, Vercel, Netlify, or any static host.
+- Connect the Agent Console to a secure backend endpoint such as `POST /api/agent/decision`.
+- Add solver-backed recommendations and exploit detection.
 
 ## License
 
