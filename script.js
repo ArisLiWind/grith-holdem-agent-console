@@ -2,6 +2,8 @@ const dbKeys = {
   hands: "grith.holdem.hands",
   nextHandId: "grith.holdem.nextHandId",
   language: "grith.holdem.language",
+  agent: "grith.holdem.agent",
+  agentMemory: "grith.holdem.agentMemory",
 };
 
 const copy = {
@@ -19,6 +21,17 @@ const copy = {
     stack: "Stack",
     bestHand: "Best",
     agentDesk: "Agent Desk",
+    agentConsole: "Agent Console",
+    consoleTitle: "Create an assistant, then let it advise or play.",
+    agentName: "Agent Name",
+    model: "Model",
+    personality: "Personality",
+    strategy: "Strategy Style",
+    memoryMode: "Memory Mode",
+    saveAgent: "Save Agent",
+    agentPlay: "Agent Play",
+    askAdvice: "Ask Advice",
+    liveExplanation: "Live Explanation",
     ruleTitle: "Read the table. Ask the agents. Choose your line.",
     readyStatus: "Deal a new hand to start the table.",
     community: "Community Cards",
@@ -40,6 +53,8 @@ const copy = {
     showdown: "Showdown complete.",
     agentsReady: "Agents refreshed from the current board texture.",
     copied: "Share text copied.",
+    agentSaved: "Agent profile saved.",
+    agentActed: "Agent acted for you.",
     soundOff: "Sound off.",
     soundOn: "Sound on.",
     languageButton: "中文",
@@ -66,6 +81,17 @@ const copy = {
     stack: "筹码",
     bestHand: "最佳牌型",
     agentDesk: "Agent 作战台",
+    agentConsole: "Agent 控制台",
+    consoleTitle: "创建助手，然后让它建议或代打。",
+    agentName: "Agent 名称",
+    model: "模型",
+    personality: "性格",
+    strategy: "策略风格",
+    memoryMode: "记忆模式",
+    saveAgent: "保存 Agent",
+    agentPlay: "Agent 代打",
+    askAdvice: "询问建议",
+    liveExplanation: "实时解释",
     ruleTitle: "读取牌桌，请 Agent 出谋划策，然后选择打法。",
     readyStatus: "点击新牌局开始德州扑克桌。",
     community: "公共牌",
@@ -87,6 +113,8 @@ const copy = {
     showdown: "摊牌完成。",
     agentsReady: "Agent 已根据当前牌面刷新。",
     copied: "分享文案已复制。",
+    agentSaved: "Agent 配置已保存。",
+    agentActed: "Agent 已替你行动。",
     soundOff: "声音已关闭。",
     soundOn: "声音已开启。",
     languageButton: "EN",
@@ -138,6 +166,9 @@ const state = {
   lang: copy[localStorage.getItem(dbKeys.language)] ? localStorage.getItem(dbKeys.language) : "en",
   log: [],
   agents: [],
+  customAgent: null,
+  agentMemory: [],
+  lastExplanation: "",
 };
 
 const els = {
@@ -159,6 +190,15 @@ const els = {
   agentCards: document.querySelector("#agentCards"),
   decisionLog: document.querySelector("#decisionLog"),
   handList: document.querySelector("#handList"),
+  agentForm: document.querySelector("#agentForm"),
+  agentName: document.querySelector("#agentName"),
+  agentModel: document.querySelector("#agentModel"),
+  agentPersonality: document.querySelector("#agentPersonality"),
+  agentStrategy: document.querySelector("#agentStrategy"),
+  agentMemorySelect: document.querySelector("#agentMemory"),
+  agentPlay: document.querySelector("#agentPlayButton"),
+  advice: document.querySelector("#adviceButton"),
+  agentNarration: document.querySelector("#agentNarration"),
   fold: document.querySelector("#foldButton"),
   check: document.querySelector("#checkButton"),
   raise: document.querySelector("#raiseButton"),
@@ -174,6 +214,54 @@ const els = {
 
 function t(key) {
   return copy[state.lang][key] || copy.en[key] || key;
+}
+
+function defaultAgent() {
+  return {
+    name: "River Oracle",
+    model: "GPT-5 Thinking",
+    personality: "calm",
+    strategy: "balanced",
+    memory: "session",
+  };
+}
+
+function loadAgent() {
+  try {
+    state.customAgent = { ...defaultAgent(), ...JSON.parse(localStorage.getItem(dbKeys.agent)) };
+  } catch {
+    state.customAgent = defaultAgent();
+  }
+  try {
+    state.agentMemory = JSON.parse(localStorage.getItem(dbKeys.agentMemory)) || [];
+  } catch {
+    state.agentMemory = [];
+  }
+  syncAgentForm();
+}
+
+function saveAgentFromForm() {
+  state.customAgent = {
+    name: els.agentName.value.trim() || "River Oracle",
+    model: els.agentModel.value,
+    personality: els.agentPersonality.value,
+    strategy: els.agentStrategy.value,
+    memory: els.agentMemorySelect.value,
+  };
+  localStorage.setItem(dbKeys.agent, JSON.stringify(state.customAgent));
+  syncAgentForm();
+  refreshAgents();
+  render();
+  showToast(t("agentSaved"));
+}
+
+function syncAgentForm() {
+  const agent = state.customAgent || defaultAgent();
+  els.agentName.value = agent.name;
+  els.agentModel.value = agent.model;
+  els.agentPersonality.value = agent.personality;
+  els.agentStrategy.value = agent.strategy;
+  els.agentMemorySelect.value = agent.memory;
 }
 
 function money(value) {
@@ -284,11 +372,17 @@ function postBlind(player, amount) {
 function heroAction(action) {
   const hero = getHero();
   if (state.archived || state.street === "showdown" || hero.folded) return;
+  const equity = estimateEquity(180);
+  const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
+  const heroEval = evaluateCards([...hero.cards, ...state.community]);
+  state.lastExplanation = buildDeepExplanation(action === "call" ? "call" : action, equity, potOdds, heroEval, false);
+  els.agentNarration.textContent = state.lastExplanation;
 
   if (action === "fold") {
     hero.folded = true;
     hero.lastAction = "fold";
     logLine(`Hero folds on ${state.street}.`);
+    logLine(`${(state.customAgent || defaultAgent()).name}: ${state.lastExplanation}`);
     archiveHand("folded");
     els.status.textContent = t("folded");
     render();
@@ -304,6 +398,7 @@ function heroAction(action) {
     hero.lastAction = state.currentBet > hero.committed ? "call" : "check";
     logLine(`Hero ${hero.lastAction}s.`);
   }
+  logLine(`${(state.customAgent || defaultAgent()).name}: ${state.lastExplanation}`);
 
   runBots();
   if (getActiveVillains().length === 0) {
@@ -406,10 +501,28 @@ function archiveHand(result) {
     handName: heroEval.name,
     heroCards: getHero().cards.map(cardLabel),
     board: state.community.map(cardLabel),
+    explanation: state.lastExplanation,
+    agent: state.customAgent,
     createdAt: new Date().toISOString(),
   });
+  rememberHand(hands[0]);
   saveHands(hands);
   renderHandList();
+}
+
+function rememberHand(hand) {
+  const agent = state.customAgent || defaultAgent();
+  if (agent.memory === "hand") return;
+  state.agentMemory.unshift({
+    id: hand.id,
+    heroWon: hand.heroWon,
+    result: hand.result,
+    handName: hand.handName,
+    strategy: agent.strategy,
+  });
+  const limit = agent.memory === "long" ? 20 : 6;
+  state.agentMemory = state.agentMemory.slice(0, limit);
+  localStorage.setItem(dbKeys.agentMemory, JSON.stringify(state.agentMemory));
 }
 
 function refreshAgents() {
@@ -417,12 +530,17 @@ function refreshAgents() {
   const heroEval = evaluateCards([...hero.cards, ...state.community]);
   const equity = estimateEquity(180);
   const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
-  const recommendation = equity > 0.68 ? "RAISE" : equity > potOdds + 0.08 ? "CALL" : state.currentBet <= hero.committed ? "CHECK" : "FOLD";
+  const recommendation = recommendAction(equity, potOdds).label;
   const risk = equity < 0.38 ? "High" : equity < 0.58 ? "Medium" : "Low";
   const zhAction = { RAISE: "加注", CALL: "跟注", CHECK: "过牌", FOLD: "弃牌" };
   const actionText = state.lang === "zh" ? zhAction[recommendation] : recommendation;
+  const agent = state.customAgent || defaultAgent();
 
   state.agents = [
+    {
+      name: agent.name,
+      text: buildDeepExplanation(recommendation.toLowerCase(), equity, potOdds, heroEval, true),
+    },
     {
       name: state.lang === "zh" ? "范围侦察" : "Range Scout",
       text:
@@ -445,6 +563,117 @@ function refreshAgents() {
           : `Risk level: ${risk}. Active opponents: ${getActiveVillains().length}.`,
     },
   ];
+  state.lastExplanation = state.agents[0].text;
+}
+
+function recommendAction(equity, potOdds) {
+  const hero = getHero();
+  const agent = state.customAgent || defaultAgent();
+  let raiseLine = 0.68;
+  let callBuffer = 0.08;
+  if (agent.strategy === "tight") {
+    raiseLine += 0.08;
+    callBuffer += 0.05;
+  }
+  if (agent.strategy === "aggressive") {
+    raiseLine -= 0.09;
+    callBuffer -= 0.03;
+  }
+  if (agent.strategy === "exploitative" && getActiveVillains().some((p) => p.style === "NIT" && !p.folded)) {
+    raiseLine -= 0.04;
+  }
+  const canCheck = state.currentBet <= hero.committed;
+  if (equity > raiseLine) return { label: "RAISE", action: "raise" };
+  if (canCheck && equity > 0.22) return { label: "CHECK", action: "call" };
+  if (equity > potOdds + callBuffer) return { label: "CALL", action: "call" };
+  return { label: "FOLD", action: "fold" };
+}
+
+function buildDeepExplanation(action, equity, potOdds, heroEval, compact = false) {
+  const agent = state.customAgent || defaultAgent();
+  const board = state.community.map(cardLabel).join(" ") || (state.lang === "zh" ? "尚无公共牌" : "no board yet");
+  const heroCards = getHero().cards.map(cardLabel).join(" ");
+  const texture = boardTexture();
+  const memoryLine = memoryInsight();
+  const actionWord = actionName(action);
+  const equityPct = Math.round(equity * 100);
+  const oddsPct = Math.round(potOdds * 100);
+
+  if (state.lang === "zh") {
+    const tone =
+      agent.personality === "bold"
+        ? "我会把主动权拿回来，"
+        : agent.personality === "teacher"
+          ? "从教学角度看，"
+          : agent.personality === "exploit"
+            ? "从剥削角度看，"
+            : "冷静看这手牌，";
+    const text = `${tone}${agent.name} 使用 ${agent.model} 的 ${strategyName(agent.strategy)} 风格建议「${actionWord}」。你的手牌是 ${heroCards}，公共牌是 ${board}，当前成牌为 ${heroEval.name}，模拟胜率约 ${equityPct}%，底池赔率约 ${oddsPct}%。牌面结构${texture.zh}。这里的关键不是只看绝对牌力，而是比较“继续投入的价格”和“未来可实现胜率”：如果我们加注，是为了让边缘听牌和弱对子付出价格；如果只是跟注/过牌，是因为摊牌价值还在但不值得把底池迅速放大。${memoryLine.zh}`;
+    return compact ? text.slice(0, 210) + (text.length > 210 ? "..." : "") : text;
+  }
+
+  const tone =
+    agent.personality === "bold"
+      ? "I want to take initiative here: "
+      : agent.personality === "teacher"
+        ? "The teaching point is this: "
+        : agent.personality === "exploit"
+          ? "Exploitatively, the important read is this: "
+          : "Calmly, the hand asks for discipline: ";
+  const text = `${tone}${agent.name}, running the ${agent.model} profile with a ${strategyName(agent.strategy)} style, recommends ${actionWord}. Hero holds ${heroCards}; board is ${board}; current made hand is ${heroEval.name}; simulated equity is about ${equityPct}% against active ranges, while pot odds are near ${oddsPct}%. The board texture is ${texture.en}. The strategic point is not raw hand rank alone; it is whether our equity can be realized at this price. Raising pressures capped ranges and charges draws, checking/calling preserves showdown value, and folding protects the stack when the price exceeds our realizable equity. ${memoryLine.en}`;
+  return compact ? text.slice(0, 230) + (text.length > 230 ? "..." : "") : text;
+}
+
+function boardTexture() {
+  if (state.community.length < 3) {
+    return {
+      en: "undeveloped, so preflop range shape matters more than made-hand value",
+      zh: "尚未展开，因此翻牌前范围结构比当前成牌更重要",
+    };
+  }
+  const suitsOnBoard = new Map();
+  for (const card of state.community) suitsOnBoard.set(card.suit, (suitsOnBoard.get(card.suit) || 0) + 1);
+  const values = state.community.map((card) => card.value).sort((a, b) => a - b);
+  const connected = values.some((value, index) => index && value - values[index - 1] <= 2);
+  const flushy = Math.max(...suitsOnBoard.values()) >= 3;
+  if (flushy && connected) return { en: "wet and coordinated, with both straight and flush pressure", zh: "很湿且连接紧密，同时存在顺子和同花压力" };
+  if (flushy) return { en: "flush-heavy, so blockers and redraws matter", zh: "同花压力明显，阻断牌和再听牌很关键" };
+  if (connected) return { en: "connected, so straight draws and two-pair shifts are live", zh: "连接性强，顺子听牌和两对变化都很活跃" };
+  return { en: "dry, which rewards thin value and controlled bluff frequency", zh: "偏干，适合薄价值下注和受控诈唬频率" };
+}
+
+function memoryInsight() {
+  const agent = state.customAgent || defaultAgent();
+  if (agent.memory === "hand") {
+    return {
+      en: "Memory mode is current-hand only, so the recommendation avoids overfitting old outcomes.",
+      zh: "当前使用单手牌记忆，因此建议不会被旧结果过度影响。",
+    };
+  }
+  const priorWins = state.agentMemory.filter((item) => item.heroWon).length;
+  const total = state.agentMemory.length;
+  if (!total) {
+    return {
+      en: "No prior memory is available yet, so this is a range-first decision.",
+      zh: "目前还没有历史记忆，因此这是一次以范围为主的判断。",
+    };
+  }
+  return {
+    en: `Memory notes ${priorWins}/${total} recent hero wins; that tempers the advice without overriding the math.`,
+    zh: `记忆中最近 ${total} 手牌有 ${priorWins} 次胜利；这会微调建议，但不会覆盖胜率数学。`,
+  };
+}
+
+function strategyName(strategy) {
+  const en = { balanced: "balanced GTO", tight: "tight value", aggressive: "pressure-aggressive", exploitative: "exploitative reads" };
+  const zh = { balanced: "均衡 GTO", tight: "紧价值", aggressive: "高压进攻", exploitative: "剥削读牌" };
+  return state.lang === "zh" ? zh[strategy] : en[strategy];
+}
+
+function actionName(action) {
+  const en = { raise: "raise", call: "check/call", fold: "fold" };
+  const zh = { raise: "加注", call: "过牌/跟注", fold: "弃牌" };
+  return state.lang === "zh" ? zh[action] : en[action];
 }
 
 function estimateEquity(trials) {
@@ -568,6 +797,7 @@ function render() {
   els.heroStack.textContent = money(hero.stack);
   els.bestHand.textContent = heroEval.name;
   els.equityFill.style.width = `${Math.round(estimateEquity(60) * 100)}%`;
+  els.agentNarration.textContent = state.lastExplanation || state.agents[0]?.text || "";
 
   renderCards(els.community, state.community, false, 5);
   renderSeat(els.heroSeat, hero, false);
@@ -638,7 +868,7 @@ function renderHandList() {
   }
   for (const hand of hands.slice(0, 8)) {
     const item = document.createElement("li");
-    item.innerHTML = `<span>#${hand.id}</span><small>${hand.heroWon ? "WIN" : hand.result.toUpperCase()}</small><strong>${money(hand.pot)}</strong>`;
+    item.innerHTML = `<span>#${hand.id}</span><small>${hand.agent?.name || "Agent"} · ${hand.heroWon ? "WIN" : hand.result.toUpperCase()}</small><strong>${money(hand.pot)}</strong>`;
     els.handList.appendChild(item);
   }
 }
@@ -666,6 +896,30 @@ function renderLanguage() {
 
 function logLine(text) {
   state.log.unshift(text);
+}
+
+function askAgentAdvice() {
+  const hero = getHero();
+  if (!hero) return;
+  const equity = estimateEquity(220);
+  const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
+  const heroEval = evaluateCards([...hero.cards, ...state.community]);
+  const recommendation = recommendAction(equity, potOdds);
+  state.lastExplanation = buildDeepExplanation(recommendation.action, equity, potOdds, heroEval, false);
+  els.agentNarration.textContent = state.lastExplanation;
+  logLine(`${(state.customAgent || defaultAgent()).name} advises ${recommendation.label}: ${state.lastExplanation}`);
+  renderLog();
+}
+
+function agentPlayHand() {
+  if (state.archived || state.street === "showdown" || state.street === "folded") return;
+  const hero = getHero();
+  const equity = estimateEquity(240);
+  const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
+  const recommendation = recommendAction(equity, potOdds);
+  askAgentAdvice();
+  heroAction(recommendation.action);
+  showToast(t("agentActed"));
 }
 
 async function shareHand() {
@@ -719,6 +973,12 @@ els.nextStreet.addEventListener("click", () => {
 });
 els.newHand.addEventListener("click", startHand);
 els.share.addEventListener("click", shareHand);
+els.agentForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveAgentFromForm();
+});
+els.agentPlay.addEventListener("click", agentPlayHand);
+els.advice.addEventListener("click", askAgentAdvice);
 els.language.addEventListener("click", () => {
   state.lang = state.lang === "zh" ? "en" : "zh";
   localStorage.setItem(dbKeys.language, state.lang);
@@ -735,5 +995,6 @@ els.sound.addEventListener("click", () => {
   showToast(state.muted ? t("soundOff") : t("soundOn"));
 });
 
+loadAgent();
 renderLanguage();
 startHand();

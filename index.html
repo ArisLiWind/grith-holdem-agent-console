@@ -92,9 +92,69 @@
           </div>
         </div>
 
-        <aside class="leader-panel">
-          <div class="panel-label" data-i18n="decisionLog">Decision Log</div>
-          <ol id="decisionLog" class="decision-log"></ol>
+        <aside class="leader-panel agent-console">
+          <div>
+            <div class="panel-label" data-i18n="agentConsole">Agent Console</div>
+            <h2 data-i18n="consoleTitle">Create an assistant, then let it advise or play.</h2>
+          </div>
+
+          <form id="agentForm" class="agent-form">
+            <label>
+              <span data-i18n="agentName">Agent Name</span>
+              <input id="agentName" type="text" value="River Oracle" />
+            </label>
+            <label>
+              <span data-i18n="model">Model</span>
+              <select id="agentModel">
+                <option>GPT-5 Thinking</option>
+                <option>GPT-4.1 Tactical</option>
+                <option>o4-mini Fast</option>
+                <option>Local Heuristic</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="personality">Personality</span>
+              <select id="agentPersonality">
+                <option value="calm">Calm Analyst</option>
+                <option value="bold">Fearless Pro</option>
+                <option value="teacher">Patient Coach</option>
+                <option value="exploit">Exploit Hunter</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="strategy">Strategy Style</span>
+              <select id="agentStrategy">
+                <option value="balanced">Balanced GTO</option>
+                <option value="tight">Tight Value</option>
+                <option value="aggressive">Pressure Aggro</option>
+                <option value="exploitative">Exploitative Reads</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="memoryMode">Memory Mode</span>
+              <select id="agentMemory">
+                <option value="session">Session Memory</option>
+                <option value="hand">Current Hand Only</option>
+                <option value="long">Long-Term Profile</option>
+              </select>
+            </label>
+            <div class="console-actions">
+              <button id="saveAgentButton" class="primary-button" type="submit" data-i18n="saveAgent">Save Agent</button>
+              <button id="agentPlayButton" class="primary-button cyan-action" type="button" data-i18n="agentPlay">Agent Play</button>
+              <button id="adviceButton" class="primary-button raise" type="button" data-i18n="askAdvice">Ask Advice</button>
+            </div>
+          </form>
+
+          <div class="agent-status">
+            <div class="panel-label" data-i18n="liveExplanation">Live Explanation</div>
+            <p id="agentNarration"></p>
+          </div>
+
+          <div>
+            <div class="panel-label" data-i18n="decisionLog">Decision Log</div>
+            <ol id="decisionLog" class="decision-log"></ol>
+          </div>
+
           <div class="local-db">
             <div class="panel-label" data-i18n="localDb">Local Hand DB</div>
             <ol id="handList" class="game-list"></ol>
