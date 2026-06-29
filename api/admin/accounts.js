@@ -12,6 +12,7 @@ module.exports = async function handler(request, response) {
     accounts: users.map((user) => ({
       name: user.nickname || user.name || user.email,
       email: user.email || "",
+      wechat: user.wechat || "",
       chips: user.chips || 0,
       updatedAt: user.updatedAt || user.createdAt || "",
     })),

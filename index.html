@@ -25,7 +25,10 @@
           <button id="agentSettingsButton" class="share-button" type="button" data-i18n="agentSettings">Agent Settings</button>
           <button id="buyChipsButton" class="share-button" type="button" data-i18n="buyChips">Buy Chips</button>
           <button id="redeemButton" class="share-button" type="button" data-i18n="redeemChips">Redeem Chips</button>
-          <button id="accountButton" class="share-button" type="button" data-i18n="accountSettings">Account</button>
+          <button id="accountButton" class="account-button" type="button" aria-label="Account settings">
+            <span id="accountAvatarBadge" class="account-avatar-badge">G</span>
+            <span class="account-button-text" data-i18n="accountSettings">Account</span>
+          </button>
           <button id="leaderboardButton" class="share-button" type="button" data-i18n="leaderboard">Leaderboard</button>
           <button id="shareButton" class="share-button" type="button" data-i18n="shareHand">Share Hand</button>
         </div>
@@ -271,25 +274,23 @@
       <form id="accountForm" method="dialog" class="dialog-card">
         <button class="dialog-close" type="button" data-dialog-close aria-label="Close">×</button>
         <span class="panel-label" data-i18n="accountSettings">Account</span>
-        <h2 data-i18n="accountTitle">Your player profile</h2>
+        <div class="profile-card">
+          <div id="accountAvatarPreview" class="profile-avatar">G</div>
+          <label class="profile-name-field">
+            <span data-i18n="nickname">Nickname</span>
+            <input id="accountName" type="text" />
+          </label>
+        </div>
         <label>
           <span data-i18n="email">Email</span>
           <input id="accountEmail" type="email" autocomplete="email" />
         </label>
         <label>
-          <span data-i18n="password">Password</span>
-          <input id="accountPassword" type="password" autocomplete="new-password" />
-        </label>
-        <label>
-          <span data-i18n="nickname">Nickname</span>
-          <input id="accountName" type="text" />
-        </label>
-        <label>
-          <span data-i18n="avatar">Avatar URL</span>
-          <input id="accountAvatar" type="url" placeholder="https://..." />
+          <span data-i18n="wechat">WeChat</span>
+          <input id="accountWechat" type="text" autocomplete="off" />
         </label>
         <button class="primary-button" type="submit" data-i18n="saveAccount">Save Account</button>
-        <p class="dialog-note" data-i18n="accountNote">This prototype stores the profile locally; production registration should use the backend auth API.</p>
+        <p class="dialog-note" data-i18n="accountNote">Invite friends into the same room from the top bar.</p>
       </form>
     </dialog>
 

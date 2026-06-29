@@ -9,6 +9,7 @@ module.exports = async function handler(request, response) {
 
   const email = String(request.body?.email || "").trim().toLowerCase();
   const nickname = String(request.body?.nickname || "Player").trim();
+  const wechat = String(request.body?.wechat || "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     response.status(400).json({ ok: false, error: "invalid_email" });
     return;
@@ -18,6 +19,7 @@ module.exports = async function handler(request, response) {
   const existing = users.find((user) => user.email === email);
   if (existing) {
     existing.nickname = nickname;
+    existing.wechat = wechat;
     existing.updatedAt = new Date().toISOString();
     store.users = users;
     await kvSetJson("grith:users", users);
@@ -25,7 +27,7 @@ module.exports = async function handler(request, response) {
     return;
   }
 
-  users.push({ email, nickname, createdAt: new Date().toISOString() });
+  users.push({ email, nickname, wechat, createdAt: new Date().toISOString() });
   store.users = users;
   await kvSetJson("grith:users", users);
   response.status(200).json({ ok: true, user: { email, nickname } });

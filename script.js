@@ -18,7 +18,7 @@ const copy = {
     brandSub: "MULTI-AGENT POKER OPERATIONS",
     shareHand: "Share Hand",
     googleSignIn: "Google Sign In",
-    inviteFriend: "Invite Friend",
+    inviteFriend: "Invite Friend Seat",
     agentSettings: "Agent Settings",
     buyChips: "Buy Chips",
     accountSettings: "Account",
@@ -39,9 +39,9 @@ const copy = {
     email: "Email",
     password: "Password",
     nickname: "Nickname",
-    avatar: "Avatar URL",
+    wechat: "WeChat",
     saveAccount: "Save Account",
-    accountNote: "This prototype stores the profile locally; production registration should use the backend auth API.",
+    accountNote: "Invite friends into this room from the top bar. API keys stay on the backend.",
     accountSaved: "Account saved.",
     chatPlaceholder: "Ask River Oracle...",
     sendChat: "Send",
@@ -71,15 +71,16 @@ const copy = {
     streakGrandHint: "Keep going: win 15 hands for the 8888 chip grand pack. It will be difficult.",
     streakNextPitch: "{count} more win to unlock the 500 USD prize track and 18888 chip dream.",
     streakNextPitchPlural: "{count} more wins to unlock the 500 USD prize track and 18888 chip dream.",
-    sixPlayerNotice: "Hand 6 unlocked a six-player table. Two new opponents joined.",
+    sixPlayerNotice: "Hand 10 allows invited friends to take extra seats.",
+    inviteSeatLocked: "Extra seats open after hand 10. The invite link still keeps this room.",
     unlimitedUnlocked: "Ten-win streak unlocked premium bet sizing.",
     streakPressureLose: "The streak pressure hand matched you against a stronger table; {winner} wins at showdown with {winnerHand}. You had {heroHand}.",
     wagerSize: "Bet Size",
     room: "Room",
     guestStatus: "Guest mode. Sign in to show your player name.",
-    inviteReady: "Invite links let a friend open the same room.",
+    inviteReady: "Invite a friend to sit in this room.",
     signedInAs: "Signed in as {name}.",
-    inviteCopied: "Invite link copied.",
+    inviteCopied: "Seat invite link copied.",
     inviteJoined: "Joined room {room}.",
     result: "Result",
     resultWin: "WIN",
@@ -170,7 +171,7 @@ const copy = {
     brandSub: "多 Agent 德州扑克作战系统",
     shareHand: "分享牌局",
     googleSignIn: "Google 登录",
-    inviteFriend: "邀请好友",
+    inviteFriend: "邀请朋友入席",
     agentSettings: "Agent 设置",
     buyChips: "购买筹码",
     accountSettings: "账号设置",
@@ -191,9 +192,9 @@ const copy = {
     email: "邮箱",
     password: "密码",
     nickname: "昵称",
-    avatar: "头像 URL",
+    wechat: "微信",
     saveAccount: "保存账号",
-    accountNote: "当前原型先本地保存资料；正式邮箱注册需要后端 Auth API。",
+    accountNote: "邀请朋友入席会打开同一个房间；AI Key 只放在后端环境变量。",
     accountSaved: "账号已保存。",
     chatPlaceholder: "问 River Oracle...",
     sendChat: "发送",
@@ -223,15 +224,16 @@ const copy = {
     streakGrandHint: "继续冲击：连胜 15 局可领 8888 筹码大礼包，但会很难。",
     streakNextPitch: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
     streakNextPitchPlural: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
-    sixPlayerNotice: "第 6 局已解锁 6 人桌，两位新对手入座。",
+    sixPlayerNotice: "第 10 局后开放额外入席，席位由邀请链接加入。",
+    inviteSeatLocked: "额外席位第 10 局后开放；邀请链接仍会进入同一个房间。",
     unlimitedUnlocked: "10 连胜已解锁高级下注档位。",
     streakPressureLose: "第 15 连胜压力局匹配到强桌，{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
     wagerSize: "下注档位",
     room: "房间",
     guestStatus: "游客模式。登录后会显示你的玩家名。",
-    inviteReady: "邀请链接可以让朋友打开同一个房间。",
+    inviteReady: "邀请朋友打开同一个房间并入席。",
     signedInAs: "已登录为 {name}。",
-    inviteCopied: "邀请链接已复制。",
+    inviteCopied: "入席邀请链接已复制。",
     inviteJoined: "已加入房间 {room}。",
     result: "结算",
     resultWin: "赢了",
@@ -379,6 +381,8 @@ const state = {
   chipFamily: "classic",
   pressureHand: false,
   selectedWager: 20,
+  invitedSeats: 0,
+  aiAdviceToken: 0,
 };
 
 const els = {
@@ -459,9 +463,10 @@ const els = {
   accountDialog: document.querySelector("#accountDialog"),
   accountForm: document.querySelector("#accountForm"),
   accountEmail: document.querySelector("#accountEmail"),
-  accountPassword: document.querySelector("#accountPassword"),
+  accountWechat: document.querySelector("#accountWechat"),
   accountName: document.querySelector("#accountName"),
-  accountAvatar: document.querySelector("#accountAvatar"),
+  accountAvatarBadge: document.querySelector("#accountAvatarBadge"),
+  accountAvatarPreview: document.querySelector("#accountAvatarPreview"),
   adminEntry: document.querySelector("#adminEntry"),
   adminDialog: document.querySelector("#adminDialog"),
   adminLoginForm: document.querySelector("#adminLoginForm"),
@@ -586,6 +591,17 @@ function saveLocalAccount(user) {
   localStorage.setItem(dbKeys.accounts, JSON.stringify(accounts.slice(0, 50)));
 }
 
+function profileInitial(name = "") {
+  const clean = String(name || "G").trim();
+  return clean ? clean[0].toUpperCase() : "G";
+}
+
+function syncAccountAvatar() {
+  const initial = profileInitial(state.user?.name || "Google Player");
+  if (els.accountAvatarBadge) els.accountAvatarBadge.textContent = initial;
+  if (els.accountAvatarPreview) els.accountAvatarPreview.textContent = initial;
+}
+
 function bankrollKey(name, bot) {
   return bot ? name : "hero";
 }
@@ -602,6 +618,7 @@ function saveCurrentStacks() {
 function loadSession() {
   const params = new URLSearchParams(window.location.search);
   const incomingRoom = params.get("room");
+  state.invitedSeats = params.get("seat") === "1" ? 1 : 0;
   state.roomId = incomingRoom || localStorage.getItem(dbKeys.room) || createRoomId();
   localStorage.setItem(dbKeys.room, state.roomId);
   if (incomingRoom) showToast(fillTemplate(t("inviteJoined"), { room: incomingRoom }));
@@ -638,11 +655,12 @@ function renderSession() {
   els.roomCode.textContent = state.roomId;
   els.authStatus.textContent = state.user ? fillTemplate(t("signedInAs"), { name: state.user.name }) : t("guestStatus");
   els.inviteStatus.textContent = t("inviteReady");
+  syncAccountAvatar();
 }
 
 function signInWithGoogle() {
   const name = state.user?.name || "Google Player";
-  state.user = { name, provider: "google", signedInAt: new Date().toISOString() };
+  state.user = { ...state.user, name, provider: "google", signedInAt: new Date().toISOString() };
   localStorage.setItem(dbKeys.user, JSON.stringify(state.user));
   saveLocalAccount(state.user);
   const hero = getHero();
@@ -653,9 +671,9 @@ function signInWithGoogle() {
 
 function openAccountDialog() {
   els.accountEmail.value = state.user?.email || "";
+  els.accountWechat.value = state.user?.wechat || "";
   els.accountName.value = state.user?.name || "";
-  els.accountAvatar.value = state.user?.avatar || "";
-  els.accountPassword.value = "";
+  syncAccountAvatar();
   els.accountDialog.showModal();
 }
 
@@ -663,8 +681,8 @@ async function saveAccount(event) {
   event.preventDefault();
   state.user = {
     email: els.accountEmail.value.trim(),
+    wechat: els.accountWechat.value.trim(),
     name: els.accountName.value.trim() || "Google Player",
-    avatar: els.accountAvatar.value.trim(),
     provider: "email",
     signedInAt: new Date().toISOString(),
   };
@@ -672,11 +690,13 @@ async function saveAccount(event) {
   saveLocalAccount(state.user);
   const hero = getHero();
   if (hero) hero.name = state.user.name;
-  await fetch("/api/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: state.user.email, password: els.accountPassword.value, nickname: state.user.name }),
-  }).catch(() => {});
+  if (state.user.email) {
+    await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: state.user.email, nickname: state.user.name, wechat: state.user.wechat }),
+    }).catch(() => {});
+  }
   renderSession();
   render();
   els.accountDialog.close();
@@ -686,13 +706,15 @@ async function saveAccount(event) {
 async function inviteFriend() {
   const url = new URL(window.location.href);
   url.searchParams.set("room", state.roomId);
-  const text = state.lang === "zh" ? `来 GRITH 德州扑克房间 ${state.roomId} 对战：${url}` : `Join my GRITH Hold'em room ${state.roomId}: ${url}`;
+  url.searchParams.set("seat", "1");
+  const text = state.lang === "zh" ? `来 GRITH 德州扑克房间 ${state.roomId} 入席对战：${url}` : `Take a seat in my GRITH Hold'em room ${state.roomId}: ${url}`;
   if (navigator.share) {
     await navigator.share({ title: "GRITH Hold'em", text, url: String(url) }).catch(() => {});
   } else {
     await navigator.clipboard.writeText(String(url)).catch(() => {});
   }
   els.inviteStatus.textContent = String(url);
+  if (state.handId < 10) showToast(t("inviteSeatLocked"));
   showToast(t("inviteCopied"));
 }
 
@@ -808,9 +830,76 @@ function renderChat() {
   if (!els.chatMessages) return;
   els.chatMessages.innerHTML = state.chat
     .slice(-8)
-    .map((message) => `<div class="chat-bubble ${message.role}">${message.text}</div>`)
+    .map((message) => `<div class="chat-bubble ${message.role}">${escapeHtml(message.text)}</div>`)
     .join("");
   els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function tableContextForAgent(question = "") {
+  const hero = getHero();
+  const heroEval = hero ? evaluateCards([...hero.cards, ...state.community]) : null;
+  const equity = hero ? Math.round(estimateEquity(100) * 100) : 0;
+  const potOdds = hero && state.currentBet > hero.committed ? Math.round(((state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed)) * 100) : 0;
+  const activeVillains = getActiveVillains().map((player) => ({
+    name: player.name,
+    style: player.style,
+    stack: player.stack,
+    committed: player.committed,
+    action: player.action,
+  }));
+  return {
+    lang: state.lang,
+    question,
+    roomId: state.roomId,
+    handId: state.handId,
+    street: t(state.street),
+    pot: state.pot,
+    currentBet: state.currentBet,
+    hero: hero
+      ? {
+          name: hero.name,
+          cards: hero.cards.map(cardLabel),
+          stack: hero.stack,
+          committed: hero.committed,
+          handType: heroEval?.name || "",
+          equity,
+          potOdds,
+        }
+      : null,
+    community: state.community.map(cardLabel),
+    activeVillains,
+    localAdvice: state.lastExplanation || agentChatReply(question),
+  };
+}
+
+async function syncNaturalAgentAdvice(question) {
+  const token = ++state.aiAdviceToken;
+  try {
+    const response = await fetch("/api/agent/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: question, context: tableContextForAgent(question) }),
+    });
+    if (!response.ok || token !== state.aiAdviceToken) return;
+    const payload = await response.json();
+    const reply = String(payload.reply || "").trim();
+    if (!reply || !state.agents[0]) return;
+    state.agents[0].text = reply;
+    state.lastExplanation = reply;
+    renderAgentCards();
+    if (els.agentNarration) els.agentNarration.textContent = reply;
+  } catch {
+    // The local guidance remains visible when backend AI is unavailable.
+  }
 }
 
 function agentChatReply(question) {
@@ -837,7 +926,7 @@ async function submitChat(event) {
     const response = await fetch("/api/agent/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, hand: state.lastExplanation }),
+      body: JSON.stringify({ message: text, context: tableContextForAgent(text) }),
     });
     const payload = await response.json();
     state.chat.push({ role: "agent", text: payload.reply || localReply });
@@ -1075,7 +1164,8 @@ function startHand() {
   state.archived = false;
   state.pressureHand = state.winStreak >= 14;
   state.log = [];
-  const activeBots = botSeats.slice(0, state.handId >= 6 ? 5 : 3);
+  const extraSeats = state.handId >= 10 ? Math.min(2, state.invitedSeats) : 0;
+  const activeBots = botSeats.slice(0, 3 + extraSeats);
   state.players = [
     makePlayer(state.user?.name || (state.lang === "zh" ? "你" : "You"), "HERO", false),
     ...activeBots.map((bot) => makePlayer(bot.name, bot.style, true)),
@@ -1090,7 +1180,7 @@ function startHand() {
   postBlind(state.players[1], 10);
   postBlind(state.players[2], 20);
   logLine(`Hand #${state.handId}: blinds posted. Hero is on the button.`);
-  if (state.handId === 6) showToast(t("sixPlayerNotice"));
+  if (state.handId === 10) showToast(t("sixPlayerNotice"));
   refreshAgents();
   render();
 }
@@ -1436,6 +1526,7 @@ function refreshAgents() {
   ];
   state.lastExplanation = state.agents[0].text;
   renderGuidance(recommendationResult.action, equity, potOdds, heroEval);
+  syncNaturalAgentAdvice(state.lang === "zh" ? "现在这手牌应该怎么打？" : "How should I play this hand now?");
 }
 
 function renderGuidance(action, equity, potOdds, heroEval) {
@@ -2092,6 +2183,9 @@ els.wagerButtons.forEach((button) => {
 });
 els.account.addEventListener("click", openAccountDialog);
 els.accountForm.addEventListener("submit", saveAccount);
+els.accountName.addEventListener("input", () => {
+  if (els.accountAvatarPreview) els.accountAvatarPreview.textContent = profileInitial(els.accountName.value || state.user?.name);
+});
 els.chatForm.addEventListener("submit", submitChat);
 els.adminEntry.addEventListener("click", openAdminDialog);
 els.adminLoginForm.addEventListener("submit", enterAdmin);
