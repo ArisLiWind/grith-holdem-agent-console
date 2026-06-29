@@ -20,9 +20,39 @@
           <button id="soundToggle" class="icon-button" type="button" aria-label="Toggle sound">♪</button>
           <button id="languageToggle" class="share-button compact-button" type="button">中文</button>
           <button id="helpToggle" class="icon-button" type="button" aria-label="Toggle rules" aria-expanded="false">?</button>
+          <button id="googleSignInButton" class="share-button" type="button" data-i18n="googleSignIn">Google Sign In</button>
+          <button id="inviteButton" class="share-button" type="button" data-i18n="inviteFriend">Invite Friend</button>
+          <button id="agentSettingsButton" class="share-button" type="button" data-i18n="agentSettings">Agent Settings</button>
+          <button id="buyChipsButton" class="share-button" type="button" data-i18n="buyChips">Buy Chips</button>
+          <button id="redeemButton" class="share-button" type="button" data-i18n="redeemChips">Redeem Chips</button>
+          <button id="accountButton" class="share-button" type="button" data-i18n="accountSettings">Account</button>
           <button id="shareButton" class="share-button" type="button" data-i18n="shareHand">Share Hand</button>
         </div>
       </header>
+
+      <section id="roomPanel" class="room-panel" aria-label="Room and login">
+        <div>
+          <span class="panel-label" data-i18n="room">Room</span>
+          <strong id="roomCode">LOCAL</strong>
+        </div>
+        <p id="authStatus" data-i18n="guestStatus">Guest mode. Sign in to show your player name.</p>
+        <p id="inviteStatus" data-i18n="inviteReady">Invite links let a friend open the same room.</p>
+      </section>
+
+      <form id="redeemPanel" class="redeem-panel" hidden>
+        <fieldset>
+          <span class="panel-label" data-i18n="redeemCodeLabel">Chip Code</span>
+          <div class="redeem-digits" aria-label="Six digit chip code">
+            <input class="redeem-digit" type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 1" />
+            <input class="redeem-digit" type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 2" />
+            <input class="redeem-digit" type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 3" />
+            <input class="redeem-digit" type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 4" />
+            <input class="redeem-digit" type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 5" />
+            <input class="redeem-digit" type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 6" />
+          </div>
+        </fieldset>
+        <button class="primary-button" type="submit" data-i18n="redeemApply">Apply Code</button>
+      </form>
 
       <section id="helpPanel" class="help-panel" hidden>
         <div>
@@ -59,14 +89,43 @@
         </div>
       </section>
 
-      <section class="arena" aria-label="Poker arena">
+      <section id="streakPanel" class="streak-panel" aria-label="Win streak rewards">
+        <div>
+          <span class="panel-label" data-i18n="streakLabel">Win Streak</span>
+          <strong id="streakCount">0</strong>
+        </div>
+        <button id="openChestButton" class="primary-button" type="button" disabled data-i18n="openChest">Open Chest</button>
+        <label id="raiseControl" class="raise-control" hidden>
+          <span data-i18n="raiseAmount">Raise Amount</span>
+          <input id="raiseAmount" type="number" min="40" step="10" value="100" />
+        </label>
+        <label id="chipFamilyControl" class="raise-control" hidden>
+          <span data-i18n="chipFamily">Chip Family</span>
+          <select id="chipFamily">
+            <option value="classic" data-i18n="chipClassic">Classic</option>
+            <option value="ruby" data-i18n="chipRuby">Ruby</option>
+            <option value="ocean" data-i18n="chipOcean">Ocean</option>
+            <option value="royal" data-i18n="chipRoyal">Royal</option>
+            <option value="gold" data-i18n="chipGold">Gold</option>
+          </select>
+        </label>
+      </section>
+
+      <section id="arena" class="arena" aria-label="Poker arena">
         <aside class="mission-panel">
           <div class="panel-label" data-i18n="agentDesk">Agent Desk</div>
-          <h2 data-i18n="ruleTitle">Read the table. Ask the agents. Choose your line.</h2>
+          <h2 id="agentGuidanceTitle">Read the table. Ask the agents. Choose your line.</h2>
           <div id="agentCards" class="agent-cards"></div>
           <div class="streak-meter" aria-hidden="true">
             <span id="equityFill"></span>
           </div>
+          <section class="agent-chat" aria-label="Agent chat">
+            <div id="chatMessages" class="chat-messages"></div>
+            <form id="chatForm" class="chat-form">
+              <input id="chatInput" type="text" data-i18n-placeholder="chatPlaceholder" placeholder="Ask River Oracle..." />
+              <button class="primary-button" type="submit" data-i18n="sendChat">Send</button>
+            </form>
+          </section>
           <p id="statusText" data-i18n="readyStatus">Deal a new hand to start the table.</p>
         </aside>
 
@@ -76,7 +135,11 @@
             <div class="board-zone">
               <div class="panel-label" data-i18n="community">Community Cards</div>
               <div id="communityCards" class="card-row community-row"></div>
-              <div class="pot-chip"><span data-i18n="pot">Pot</span><strong id="centerPot">0</strong></div>
+              <div class="pot-chip">
+                <span data-i18n="pot">Pot</span>
+                <strong id="centerPot">0</strong>
+                <div id="centerPotChips" class="chip-stack" aria-hidden="true"></div>
+              </div>
             </div>
             <div class="seat villain seat-west" id="villainWest"></div>
             <div class="seat villain seat-east" id="villainEast"></div>
@@ -90,9 +153,15 @@
             <button id="nextStreetButton" class="primary-button cyan-action" type="button" data-i18n="nextStreet">Auto Street</button>
             <button id="newHandButton" class="primary-button" type="button" data-i18n="newHand">New Hand</button>
           </div>
+          <section id="resultPanel" class="result-panel" hidden>
+            <span class="panel-label" data-i18n="result">Result</span>
+            <strong id="resultTitle"></strong>
+            <strong id="resultDelta" class="result-delta"></strong>
+            <p id="resultSummary"></p>
+          </section>
         </div>
 
-        <aside class="leader-panel agent-console">
+        <aside id="agentConsole" class="leader-panel agent-console collapsed" hidden>
           <div>
             <div class="panel-label" data-i18n="agentConsole">Agent Console</div>
             <h2 data-i18n="consoleTitle">Create an assistant, then let it advise or play.</h2>
@@ -163,14 +232,103 @@
       </section>
 
       <section class="collection-rail" aria-label="Agent modules">
-        <div class="mini-card acid" data-i18n="rangeScout">RANGE SCOUT</div>
-        <div class="mini-card ember" data-i18n="gtoCoach">GTO COACH</div>
-        <div class="mini-card cyan" data-i18n="riskSentinel">RISK SENTINEL</div>
-        <div class="mini-card ink" data-i18n="tableMemory">TABLE MEMORY</div>
+        <button class="mini-card acid" type="button" data-module="range" data-i18n="rangeScout">RANGE SCOUT</button>
+        <button class="mini-card ember" type="button" data-module="coach" data-i18n="gtoCoach">GTO COACH</button>
+        <button class="mini-card cyan" type="button" data-module="risk" data-i18n="riskSentinel">RISK SENTINEL</button>
+        <button class="mini-card ink" type="button" data-module="memory" data-i18n="tableMemory">TABLE MEMORY</button>
+        <article id="modulePanel" class="module-panel" hidden>
+          <span id="moduleLabel" class="panel-label">Agent Module</span>
+          <h2 id="moduleTitle"></h2>
+          <p id="moduleBody"></p>
+        </article>
       </section>
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <button id="adminEntry" class="admin-entry" type="button" aria-label="Admin">♣</button>
+
+    <dialog id="buyDialog" class="app-dialog">
+      <form id="buyForm" method="dialog" class="dialog-card">
+        <button class="dialog-close" type="button" data-dialog-close aria-label="Close">×</button>
+        <span class="panel-label" data-i18n="buyChips">Buy Chips</span>
+        <h2 data-i18n="buyTitle">Buy diamond chips</h2>
+        <p data-i18n="buyRate">1 RMB = 1 diamond chip.</p>
+        <label>
+          <span data-i18n="buyAmount">RMB Amount</span>
+          <input id="buyAmount" type="number" min="1" step="1" value="20" />
+        </label>
+        <div class="cashier-preview">
+          <strong id="buyPreview">♦20</strong>
+          <span data-i18n="alipayCashier">Alipay cashier will open after confirmation.</span>
+        </div>
+        <button class="primary-button" type="submit" data-i18n="openAlipay">Open Alipay Cashier</button>
+        <p id="buyStatus" class="dialog-note"></p>
+      </form>
+    </dialog>
+
+    <dialog id="accountDialog" class="app-dialog">
+      <form id="accountForm" method="dialog" class="dialog-card">
+        <button class="dialog-close" type="button" data-dialog-close aria-label="Close">×</button>
+        <span class="panel-label" data-i18n="accountSettings">Account</span>
+        <h2 data-i18n="accountTitle">Your player profile</h2>
+        <label>
+          <span data-i18n="email">Email</span>
+          <input id="accountEmail" type="email" autocomplete="email" />
+        </label>
+        <label>
+          <span data-i18n="password">Password</span>
+          <input id="accountPassword" type="password" autocomplete="new-password" />
+        </label>
+        <label>
+          <span data-i18n="nickname">Nickname</span>
+          <input id="accountName" type="text" />
+        </label>
+        <label>
+          <span data-i18n="avatar">Avatar URL</span>
+          <input id="accountAvatar" type="url" placeholder="https://..." />
+        </label>
+        <button class="primary-button" type="submit" data-i18n="saveAccount">Save Account</button>
+        <p class="dialog-note" data-i18n="accountNote">This prototype stores the profile locally; production registration should use the backend auth API.</p>
+      </form>
+    </dialog>
+
+    <dialog id="adminDialog" class="app-dialog">
+      <form id="adminLoginForm" method="dialog" class="dialog-card">
+        <button class="dialog-close" type="button" data-dialog-close aria-label="Close">×</button>
+        <span class="panel-label">Admin</span>
+        <h2 data-i18n="adminTitle">Redeem code manager</h2>
+        <label>
+          <span data-i18n="adminPassword">Admin password</span>
+          <input id="adminPassword" type="password" />
+        </label>
+        <button class="primary-button" type="submit" data-i18n="adminEnter">Enter Admin</button>
+      </form>
+      <section id="adminPanel" class="dialog-card admin-panel" hidden>
+        <button class="dialog-close" type="button" data-close-admin aria-label="Close">×</button>
+        <span class="panel-label">Admin</span>
+        <h2 data-i18n="adminTitle">Redeem code manager</h2>
+        <form id="adminCreateCodeForm" class="admin-create">
+          <input id="adminNewCode" type="text" inputmode="numeric" maxlength="6" placeholder="6 digits" />
+          <input id="adminNewAmount" type="number" min="1" step="1" value="1000" />
+          <button class="primary-button" type="submit" data-i18n="adminAddCode">Add Code</button>
+        </form>
+        <div id="adminCodes" class="admin-codes"></div>
+        <div class="admin-section">
+          <span class="panel-label" data-i18n="adminAccounts">Accounts</span>
+          <div id="adminAccounts" class="admin-codes"></div>
+        </div>
+      </section>
+    </dialog>
+
+    <aside id="leaderboardDrawer" class="leaderboard-drawer" aria-label="Leaderboard" aria-hidden="true">
+      <button id="leaderboardClose" class="dialog-close" type="button" aria-label="Close">×</button>
+      <span class="panel-label" data-i18n="leaderboard">Leaderboard</span>
+      <h2 data-i18n="leaderboardTitle">Player Rankings</h2>
+      <div id="leaderboardRows" class="leaderboard-rows"></div>
+      <p class="dialog-note" data-i18n="leaderboardHint">Swipe from the right edge to open this ranking panel.</p>
+    </aside>
+
+    <audio id="bgMusic" src="./clair-de-lune.ogg" loop preload="auto"></audio>
 
     <script src="./script.js"></script>
   </body>

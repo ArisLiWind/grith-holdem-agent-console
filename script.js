@@ -4,12 +4,108 @@ const dbKeys = {
   language: "grith.holdem.language",
   agent: "grith.holdem.agent",
   agentMemory: "grith.holdem.agentMemory",
+  user: "grith.holdem.user",
+  room: "grith.holdem.room",
+  bankrolls: "grith.holdem.bankrolls",
+  chat: "grith.holdem.chat",
+  adminCodes: "grith.holdem.adminCodes",
+  progress: "grith.holdem.progress",
+  accounts: "grith.holdem.accounts",
 };
 
 const copy = {
   en: {
     brandSub: "MULTI-AGENT POKER OPERATIONS",
     shareHand: "Share Hand",
+    googleSignIn: "Google Sign In",
+    inviteFriend: "Invite Friend",
+    agentSettings: "Agent Settings",
+    buyChips: "Buy Chips",
+    accountSettings: "Account",
+    redeemChips: "Redeem Chips",
+    redeemPrompt: "Enter a six-digit chip code.",
+    redeemCodeLabel: "Chip Code",
+    redeemApply: "Apply Code",
+    redeemSuccess: "Code accepted. {amount} chips added.",
+    redeemInvalid: "Invalid chip code.",
+    buyTitle: "Buy diamond chips",
+    buyRate: "1 RMB = 1 diamond chip.",
+    buyAmount: "RMB Amount",
+    alipayCashier: "Alipay cashier will open after confirmation.",
+    openAlipay: "Open Alipay Cashier",
+    paymentCreated: "Payment order created. Finish in the cashier.",
+    paymentDemo: "Cashier is ready for configuration; demo chips added locally.",
+    accountTitle: "Your player profile",
+    email: "Email",
+    password: "Password",
+    nickname: "Nickname",
+    avatar: "Avatar URL",
+    saveAccount: "Save Account",
+    accountNote: "This prototype stores the profile locally; production registration should use the backend auth API.",
+    accountSaved: "Account saved.",
+    chatPlaceholder: "Ask River Oracle...",
+    sendChat: "Send",
+    adminTitle: "Redeem code manager",
+    adminPassword: "Admin password",
+    adminEnter: "Enter Admin",
+    adminAddCode: "Add Code",
+    adminAccounts: "Accounts",
+    adminDenied: "Wrong admin password.",
+    adminCodeAdded: "Redeem code added.",
+    codeUsed: "Redeemed",
+    codeValid: "Valid",
+    leaderboard: "Leaderboard",
+    leaderboardTitle: "Player Rankings",
+    leaderboardHint: "Swipe from the right edge to open this ranking panel.",
+    leaderboardWinRate: "Win rate",
+    streakLabel: "Win Streak",
+    openChest: "Open Chest",
+    chestLocked: "Chest locked. Win {target} hands in a row.",
+    chestReward: "Chest opened. {amount} chips added.",
+    chestReady5: "Five-win chest is ready.",
+    chestReady15: "Fifteen-win chest is ready.",
+    unlimitedUnlocked: "Ten-win streak unlocked unlimited raises and chip families.",
+    streakPressureLose: "The streak pressure hand matched you against a stronger table; {winner} wins at showdown with {winnerHand}. You had {heroHand}.",
+    raiseAmount: "Raise Amount",
+    chipFamily: "Chip Family",
+    chipClassic: "Classic",
+    chipRuby: "Ruby",
+    chipOcean: "Ocean",
+    chipRoyal: "Royal",
+    chipGold: "Gold",
+    room: "Room",
+    guestStatus: "Guest mode. Sign in to show your player name.",
+    inviteReady: "Invite links let a friend open the same room.",
+    signedInAs: "Signed in as {name}.",
+    inviteCopied: "Invite link copied.",
+    inviteJoined: "Joined room {room}.",
+    result: "Result",
+    resultWin: "WIN",
+    resultLose: "LOSE",
+    resultFold: "FOLDED",
+    resultByFold: "You folded. {winner} wins the pot without showdown.",
+    resultByUncontested: "You win because every opponent folded before showdown.",
+    resultByShowdownWin: "You win at showdown with {heroHand}. {winner} takes {pot}.",
+    resultByShowdownLose: "{winner} wins at showdown with {winnerHand}. You had {heroHand}.",
+    netWin: "Net win {amount}",
+    netLose: "Net loss {amount}",
+    netEven: "No net change",
+    tellStrong: "Strong",
+    tellWeak: "Weak",
+    tellNervous: "Nervous",
+    tellHappy: "Happy",
+    tellCalm: "Calm",
+    tellAnnoyed: "Annoyed",
+    tellAngry: "Angry",
+    tellSad: "Sad",
+    tellDoubt: "Doubt",
+    tellBluff: "Bluff?",
+    tellTrap: "Trap?",
+    tellFolded: "Folded",
+    moduleRangeBody: "Range Scout reads equity against live opponents and explains whether your hand can continue.",
+    moduleCoachBody: "GTO Coach turns equity and pot odds into the cleanest action for this street.",
+    moduleRiskBody: "Risk Sentinel weighs active opponents, board texture, and misleading facial tells.",
+    moduleMemoryBody: "Table Memory summarizes recent hands so the agent can adapt without ignoring the math.",
     howToPlay: "How To Play",
     helpTitle: "Texas Hold'em with agent-assisted decisions.",
     helpOne: "You receive two private cards. Five community cards arrive across flop, turn, and river.",
@@ -46,6 +142,7 @@ const copy = {
     gtoCoach: "GTO COACH",
     riskSentinel: "RISK SENTINEL",
     tableMemory: "TABLE MEMORY",
+    moduleLabel: "Agent Module",
     noHands: "No archived hands yet.",
     folded: "You folded. Hand archived.",
     heroWins: "You win the pot.",
@@ -70,6 +167,95 @@ const copy = {
   zh: {
     brandSub: "多 Agent 德州扑克作战系统",
     shareHand: "分享牌局",
+    googleSignIn: "Google 登录",
+    inviteFriend: "邀请好友",
+    agentSettings: "Agent 设置",
+    buyChips: "购买筹码",
+    accountSettings: "账号设置",
+    redeemChips: "兑换筹码",
+    redeemPrompt: "请输入六位数兑换码。",
+    redeemCodeLabel: "筹码兑换码",
+    redeemApply: "确认兑换",
+    redeemSuccess: "兑换成功，已增加 {amount} 筹码。",
+    redeemInvalid: "兑换码无效。",
+    buyTitle: "购买钻石筹码",
+    buyRate: "1 RMB = 1 颗钻石筹码。",
+    buyAmount: "人民币金额",
+    alipayCashier: "确认后调起支付宝收银台。",
+    openAlipay: "打开支付宝收银台",
+    paymentCreated: "支付订单已创建，请在收银台完成支付。",
+    paymentDemo: "支付台待配置，已在本地模拟增加筹码。",
+    accountTitle: "你的玩家资料",
+    email: "邮箱",
+    password: "密码",
+    nickname: "昵称",
+    avatar: "头像 URL",
+    saveAccount: "保存账号",
+    accountNote: "当前原型先本地保存资料；正式邮箱注册需要后端 Auth API。",
+    accountSaved: "账号已保存。",
+    chatPlaceholder: "问 River Oracle...",
+    sendChat: "发送",
+    adminTitle: "兑换码管理",
+    adminPassword: "Admin 密码",
+    adminEnter: "进入 Admin",
+    adminAddCode: "新增兑换码",
+    adminAccounts: "账号管理",
+    adminDenied: "Admin 密码错误。",
+    adminCodeAdded: "兑换码已新增。",
+    codeUsed: "已兑换",
+    codeValid: "有效",
+    leaderboard: "排行榜",
+    leaderboardTitle: "玩家金额排行",
+    leaderboardHint: "从屏幕右侧向内滑动可打开排行榜。",
+    leaderboardWinRate: "胜率",
+    streakLabel: "连胜",
+    openChest: "开宝箱",
+    chestLocked: "宝箱未解锁，需要连续赢 {target} 局。",
+    chestReward: "宝箱已开启，增加 {amount} 筹码。",
+    chestReady5: "5 连胜宝箱已可开启。",
+    chestReady15: "15 连胜宝箱已可开启。",
+    unlimitedUnlocked: "10 连胜已解锁无限加注和筹码家族。",
+    streakPressureLose: "第 15 连胜压力局匹配到强桌，{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
+    raiseAmount: "加注金额",
+    chipFamily: "筹码家族",
+    chipClassic: "经典",
+    chipRuby: "红宝石",
+    chipOcean: "海蓝",
+    chipRoyal: "皇家紫",
+    chipGold: "金色",
+    room: "房间",
+    guestStatus: "游客模式。登录后会显示你的玩家名。",
+    inviteReady: "邀请链接可以让朋友打开同一个房间。",
+    signedInAs: "已登录为 {name}。",
+    inviteCopied: "邀请链接已复制。",
+    inviteJoined: "已加入房间 {room}。",
+    result: "结算",
+    resultWin: "赢了",
+    resultLose: "输了",
+    resultFold: "已弃牌",
+    resultByFold: "你选择弃牌，{winner} 无需摊牌赢得底池。",
+    resultByUncontested: "你获胜：所有对手都在摊牌前弃牌。",
+    resultByShowdownWin: "你摊牌获胜，牌型是 {heroHand}。{winner} 拿走 {pot}。",
+    resultByShowdownLose: "{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
+    netWin: "本局净赢 {amount}",
+    netLose: "本局净输 {amount}",
+    netEven: "本局筹码无变化",
+    tellStrong: "强势",
+    tellWeak: "偏弱",
+    tellNervous: "紧张",
+    tellHappy: "开心",
+    tellCalm: "平淡",
+    tellAnnoyed: "不悦",
+    tellAngry: "愤怒",
+    tellSad: "伤心",
+    tellDoubt: "犹疑",
+    tellBluff: "像诈唬",
+    tellTrap: "像陷阱",
+    tellFolded: "已弃牌",
+    moduleRangeBody: "范围侦察会读取当前胜率，判断你的牌是否值得继续。",
+    moduleCoachBody: "策略教练会把胜率和底池赔率转换成当前街最清晰的动作。",
+    moduleRiskBody: "风险哨兵会综合活跃对手、牌面结构和可能误导你的表情信号。",
+    moduleMemoryBody: "牌桌记忆会总结最近牌局，让 Agent 调整但不覆盖数学判断。",
     howToPlay: "玩法说明",
     helpTitle: "由多个 Agent 自动辅助决策的德州扑克。",
     helpOne: "每名玩家拿到两张私牌，公共牌会按翻牌、转牌、河牌逐步发出。",
@@ -106,6 +292,7 @@ const copy = {
     gtoCoach: "策略教练",
     riskSentinel: "风险哨兵",
     tableMemory: "牌桌记忆",
+    moduleLabel: "Agent 模块",
     noHands: "还没有归档牌局。",
     folded: "你已弃牌，牌局已归档。",
     heroWins: "你赢下底池。",
@@ -162,22 +349,45 @@ const state = {
   currentBet: baseBet,
   handId: 1,
   archived: false,
-  muted: false,
-  lang: copy[localStorage.getItem(dbKeys.language)] ? localStorage.getItem(dbKeys.language) : "en",
+  muted: true,
+  lang: copy[localStorage.getItem(dbKeys.language)] ? localStorage.getItem(dbKeys.language) : "zh",
   log: [],
   agents: [],
   customAgent: null,
   agentMemory: [],
   lastExplanation: "",
+  result: null,
+  resultSummary: "",
+  user: null,
+  roomId: "",
+  bankrolls: {},
+  resultDelta: 0,
+  chat: [],
+  winStreak: 0,
+  rewards: { chest5: false, chest15: false, opened5: false, opened15: false, unlimitedRaise: false },
+  chipFamily: "classic",
+  pressureHand: false,
 };
 
 const els = {
+  arena: document.querySelector("#arena"),
+  agentGuidanceTitle: document.querySelector("#agentGuidanceTitle"),
+  roomCode: document.querySelector("#roomCode"),
+  authStatus: document.querySelector("#authStatus"),
+  inviteStatus: document.querySelector("#inviteStatus"),
   handNumber: document.querySelector("#handNumber"),
   street: document.querySelector("#street"),
   pot: document.querySelector("#pot"),
   centerPot: document.querySelector("#centerPot"),
   heroStack: document.querySelector("#heroStack"),
   bestHand: document.querySelector("#bestHand"),
+  streakPanel: document.querySelector("#streakPanel"),
+  streakCount: document.querySelector("#streakCount"),
+  openChest: document.querySelector("#openChestButton"),
+  raiseControl: document.querySelector("#raiseControl"),
+  raiseAmount: document.querySelector("#raiseAmount"),
+  chipFamilyControl: document.querySelector("#chipFamilyControl"),
+  chipFamily: document.querySelector("#chipFamily"),
   equityFill: document.querySelector("#equityFill"),
   status: document.querySelector("#statusText"),
   community: document.querySelector("#communityCards"),
@@ -188,6 +398,7 @@ const els = {
     document.querySelector("#villainEast"),
   ],
   agentCards: document.querySelector("#agentCards"),
+  agentConsole: document.querySelector("#agentConsole"),
   decisionLog: document.querySelector("#decisionLog"),
   handList: document.querySelector("#handList"),
   agentForm: document.querySelector("#agentForm"),
@@ -205,15 +416,78 @@ const els = {
   nextStreet: document.querySelector("#nextStreetButton"),
   newHand: document.querySelector("#newHandButton"),
   share: document.querySelector("#shareButton"),
+  googleSignIn: document.querySelector("#googleSignInButton"),
+  invite: document.querySelector("#inviteButton"),
+  agentSettings: document.querySelector("#agentSettingsButton"),
+  buyChips: document.querySelector("#buyChipsButton"),
+  redeem: document.querySelector("#redeemButton"),
+  account: document.querySelector("#accountButton"),
+  redeemPanel: document.querySelector("#redeemPanel"),
+  redeemDigits: [...document.querySelectorAll(".redeem-digit")],
   language: document.querySelector("#languageToggle"),
   help: document.querySelector("#helpToggle"),
   helpPanel: document.querySelector("#helpPanel"),
   sound: document.querySelector("#soundToggle"),
+  bgMusic: document.querySelector("#bgMusic"),
+  resultPanel: document.querySelector("#resultPanel"),
+  resultTitle: document.querySelector("#resultTitle"),
+  resultDelta: document.querySelector("#resultDelta"),
+  resultSummary: document.querySelector("#resultSummary"),
+  centerPotChips: document.querySelector("#centerPotChips"),
+  chatMessages: document.querySelector("#chatMessages"),
+  chatForm: document.querySelector("#chatForm"),
+  chatInput: document.querySelector("#chatInput"),
+  buyDialog: document.querySelector("#buyDialog"),
+  buyForm: document.querySelector("#buyForm"),
+  buyAmount: document.querySelector("#buyAmount"),
+  buyPreview: document.querySelector("#buyPreview"),
+  buyStatus: document.querySelector("#buyStatus"),
+  accountDialog: document.querySelector("#accountDialog"),
+  accountForm: document.querySelector("#accountForm"),
+  accountEmail: document.querySelector("#accountEmail"),
+  accountPassword: document.querySelector("#accountPassword"),
+  accountName: document.querySelector("#accountName"),
+  accountAvatar: document.querySelector("#accountAvatar"),
+  adminEntry: document.querySelector("#adminEntry"),
+  adminDialog: document.querySelector("#adminDialog"),
+  adminLoginForm: document.querySelector("#adminLoginForm"),
+  adminPassword: document.querySelector("#adminPassword"),
+  adminPanel: document.querySelector("#adminPanel"),
+  adminCreateCodeForm: document.querySelector("#adminCreateCodeForm"),
+  adminNewCode: document.querySelector("#adminNewCode"),
+  adminNewAmount: document.querySelector("#adminNewAmount"),
+  adminCodes: document.querySelector("#adminCodes"),
+  adminAccounts: document.querySelector("#adminAccounts"),
+  leaderboardDrawer: document.querySelector("#leaderboardDrawer"),
+  leaderboardClose: document.querySelector("#leaderboardClose"),
+  leaderboardRows: document.querySelector("#leaderboardRows"),
+  moduleButtons: [...document.querySelectorAll("[data-module]")],
+  modulePanel: document.querySelector("#modulePanel"),
+  moduleTitle: document.querySelector("#moduleTitle"),
+  moduleBody: document.querySelector("#moduleBody"),
+  moduleLabel: document.querySelector("#moduleLabel"),
   toast: document.querySelector("#toast"),
 };
 
 function t(key) {
   return copy[state.lang][key] || copy.en[key] || key;
+}
+
+function fillTemplate(template, values) {
+  return Object.entries(values).reduce((text, [key, value]) => text.replaceAll(`{${key}}`, value), template);
+}
+
+function defaultBankrolls() {
+  return {
+    hero: 1000,
+    "Vector-9": 1000,
+    Mira: 1000,
+    "Old River": 1000,
+  };
+}
+
+function diamond(value) {
+  return `♦${Math.max(0, Math.round(value))}`;
 }
 
 function defaultAgent() {
@@ -240,6 +514,436 @@ function loadAgent() {
   syncAgentForm();
 }
 
+function loadBankrolls() {
+  try {
+    state.bankrolls = { ...defaultBankrolls(), ...JSON.parse(localStorage.getItem(dbKeys.bankrolls)) };
+  } catch {
+    state.bankrolls = defaultBankrolls();
+  }
+}
+
+function saveBankrolls() {
+  localStorage.setItem(dbKeys.bankrolls, JSON.stringify(state.bankrolls));
+}
+
+function loadProgress() {
+  try {
+    const progress = JSON.parse(localStorage.getItem(dbKeys.progress)) || {};
+    state.winStreak = Number(progress.winStreak || 0);
+    state.rewards = { ...state.rewards, ...(progress.rewards || {}) };
+    state.chipFamily = progress.chipFamily || "classic";
+  } catch {
+    state.winStreak = 0;
+  }
+  applyChipFamily();
+}
+
+function saveProgress() {
+  localStorage.setItem(
+    dbKeys.progress,
+    JSON.stringify({
+      winStreak: state.winStreak,
+      rewards: state.rewards,
+      chipFamily: state.chipFamily,
+    }),
+  );
+}
+
+function localAccounts() {
+  try {
+    return JSON.parse(localStorage.getItem(dbKeys.accounts)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalAccount(user) {
+  if (!user?.name && !user?.email) return;
+  const id = user.email || user.name || "guest";
+  const accounts = localAccounts().filter((account) => (account.email || account.name) !== id);
+  accounts.unshift({
+    email: user.email || "",
+    name: user.name || "Google Player",
+    avatar: user.avatar || "",
+    chips: Number(state.bankrolls.hero || 0),
+    updatedAt: new Date().toISOString(),
+  });
+  localStorage.setItem(dbKeys.accounts, JSON.stringify(accounts.slice(0, 50)));
+}
+
+function bankrollKey(name, bot) {
+  return bot ? name : "hero";
+}
+
+function saveCurrentStacks() {
+  if (!state.players.length) return;
+  for (const player of state.players) {
+    state.bankrolls[player.bankrollKey] = player.stack;
+  }
+  saveBankrolls();
+  saveLocalAccount(state.user || { name: state.players[0]?.name || "Guest" });
+}
+
+function loadSession() {
+  const params = new URLSearchParams(window.location.search);
+  const incomingRoom = params.get("room");
+  state.roomId = incomingRoom || localStorage.getItem(dbKeys.room) || createRoomId();
+  localStorage.setItem(dbKeys.room, state.roomId);
+  if (incomingRoom) showToast(fillTemplate(t("inviteJoined"), { room: incomingRoom }));
+  try {
+    state.user = JSON.parse(localStorage.getItem(dbKeys.user));
+  } catch {
+    state.user = null;
+  }
+  renderSession();
+}
+
+function loadChat() {
+  try {
+    state.chat = JSON.parse(localStorage.getItem(dbKeys.chat)) || [];
+  } catch {
+    state.chat = [];
+  }
+  if (!state.chat.length) {
+    state.chat = [
+      {
+        role: "agent",
+        text: state.lang === "zh" ? "我会一边看牌一边回答你的问题。" : "I can talk while watching the hand.",
+      },
+    ];
+  }
+  renderChat();
+}
+
+function createRoomId() {
+  return `GR-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+}
+
+function renderSession() {
+  els.roomCode.textContent = state.roomId;
+  els.authStatus.textContent = state.user ? fillTemplate(t("signedInAs"), { name: state.user.name }) : t("guestStatus");
+  els.inviteStatus.textContent = t("inviteReady");
+}
+
+function signInWithGoogle() {
+  const name = state.user?.name || "Google Player";
+  state.user = { name, provider: "google", signedInAt: new Date().toISOString() };
+  localStorage.setItem(dbKeys.user, JSON.stringify(state.user));
+  saveLocalAccount(state.user);
+  const hero = getHero();
+  if (hero) hero.name = name;
+  renderSession();
+  render();
+}
+
+function openAccountDialog() {
+  els.accountEmail.value = state.user?.email || "";
+  els.accountName.value = state.user?.name || "";
+  els.accountAvatar.value = state.user?.avatar || "";
+  els.accountPassword.value = "";
+  els.accountDialog.showModal();
+}
+
+async function saveAccount(event) {
+  event.preventDefault();
+  state.user = {
+    email: els.accountEmail.value.trim(),
+    name: els.accountName.value.trim() || "Google Player",
+    avatar: els.accountAvatar.value.trim(),
+    provider: "email",
+    signedInAt: new Date().toISOString(),
+  };
+  localStorage.setItem(dbKeys.user, JSON.stringify(state.user));
+  saveLocalAccount(state.user);
+  const hero = getHero();
+  if (hero) hero.name = state.user.name;
+  await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: state.user.email, password: els.accountPassword.value, nickname: state.user.name }),
+  }).catch(() => {});
+  renderSession();
+  render();
+  els.accountDialog.close();
+  showToast(t("accountSaved"));
+}
+
+async function inviteFriend() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("room", state.roomId);
+  const text = state.lang === "zh" ? `来 GRITH 德州扑克房间 ${state.roomId} 对战：${url}` : `Join my GRITH Hold'em room ${state.roomId}: ${url}`;
+  if (navigator.share) {
+    await navigator.share({ title: "GRITH Hold'em", text, url: String(url) }).catch(() => {});
+  } else {
+    await navigator.clipboard.writeText(String(url)).catch(() => {});
+  }
+  els.inviteStatus.textContent = String(url);
+  showToast(t("inviteCopied"));
+}
+
+function toggleRedeemPanel() {
+  els.redeemPanel.hidden = !els.redeemPanel.hidden;
+  els.redeem.setAttribute("aria-expanded", String(!els.redeemPanel.hidden));
+  if (!els.redeemPanel.hidden) els.redeemDigits[0]?.focus();
+}
+
+function getRedeemCode() {
+  return els.redeemDigits.map((input) => input.value).join("");
+}
+
+function clearRedeemCode() {
+  els.redeemDigits.forEach((input) => {
+    input.value = "";
+  });
+}
+
+async function redeemChips(code) {
+  const normalized = code.trim();
+  if (!/^\d{6}$/.test(normalized) || normalized === "041113") {
+    showToast(t("redeemInvalid"));
+    return;
+  }
+  let amount = 0;
+  try {
+    const response = await fetch("/api/redeem", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: normalized }),
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      amount = payload.amount || 0;
+    }
+  } catch {
+    // Static previews fall back to the browser-stored Admin list.
+  }
+  if (amount <= 0) {
+    const codes = localAdminCodes();
+    const managedCode = codes.find((item) => item.code === normalized && !item.used);
+    if (managedCode) {
+      amount = Number(managedCode.amount || 0);
+      managedCode.used = true;
+      managedCode.usedAt = new Date().toISOString();
+      saveLocalAdminCodes(codes);
+    }
+  }
+  if (amount <= 0) {
+    showToast(t("redeemInvalid"));
+    return;
+  }
+  const hero = getHero();
+  state.bankrolls.hero = Math.max(0, Number(state.bankrolls.hero || 0)) + amount;
+  if (hero) {
+    hero.stack += amount;
+    hero.startStack += amount;
+  }
+  saveBankrolls();
+  els.redeemPanel.hidden = true;
+  clearRedeemCode();
+  render();
+  showToast(fillTemplate(t("redeemSuccess"), { amount: money(amount) }));
+}
+
+function addHeroChips(amount) {
+  const hero = getHero();
+  state.bankrolls.hero = Math.max(0, Number(state.bankrolls.hero || 0)) + amount;
+  if (hero) {
+    hero.stack += amount;
+    hero.startStack += amount;
+  }
+  saveBankrolls();
+  render();
+}
+
+function openBuyDialog() {
+  updateBuyPreview();
+  els.buyStatus.textContent = "";
+  els.buyDialog.showModal();
+}
+
+function updateBuyPreview() {
+  const amount = Math.max(1, Math.round(Number(els.buyAmount.value || 1)));
+  els.buyPreview.textContent = diamond(amount);
+}
+
+async function buyChips(event) {
+  event.preventDefault();
+  const amount = Math.max(1, Math.round(Number(els.buyAmount.value || 1)));
+  try {
+    const response = await fetch("/api/pay/alipay", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amountRmb: amount, chips: amount, userId: state.user?.email || "guest" }),
+    });
+    const payload = await response.json();
+    if (payload.cashierUrl) {
+      window.open(payload.cashierUrl, "_blank", "noopener");
+      els.buyStatus.textContent = t("paymentCreated");
+      return;
+    }
+  } catch {
+    // Static local previews cannot execute Vercel functions.
+  }
+  addHeroChips(amount);
+  els.buyStatus.textContent = t("paymentDemo");
+  showToast(t("paymentDemo"));
+}
+
+function renderChat() {
+  if (!els.chatMessages) return;
+  els.chatMessages.innerHTML = state.chat
+    .slice(-8)
+    .map((message) => `<div class="chat-bubble ${message.role}">${message.text}</div>`)
+    .join("");
+  els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+}
+
+function agentChatReply(question) {
+  const hero = getHero();
+  const heroEval = hero ? evaluateCards([...hero.cards, ...state.community]) : null;
+  const equity = hero ? Math.round(estimateEquity(80) * 100) : 0;
+  const recommendation = hero ? recommendAction(equity / 100, 0.57).label : "CHECK";
+  if (state.lang === "zh") {
+    const action = recommendation === "FOLD" ? "弃牌" : recommendation === "RAISE" ? "加注" : "过牌/跟注";
+    return `你问：“${question}”。当前牌型是${heroEval?.name || "未知"}，估算胜率约 ${equity}%。我建议先考虑${action}，重点是比较胜率和继续投入价格。`;
+  }
+  return `You asked: "${question}". Current hand is ${heroEval?.name || "unknown"} with about ${equity}% equity. I would lean ${recommendation}, balancing equity against the price to continue.`;
+}
+
+async function submitChat(event) {
+  event.preventDefault();
+  const text = els.chatInput.value.trim();
+  if (!text) return;
+  els.chatInput.value = "";
+  state.chat.push({ role: "user", text });
+  renderChat();
+  const localReply = agentChatReply(text);
+  try {
+    const response = await fetch("/api/agent/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, hand: state.lastExplanation }),
+    });
+    const payload = await response.json();
+    state.chat.push({ role: "agent", text: payload.reply || localReply });
+  } catch {
+    state.chat.push({ role: "agent", text: localReply });
+  }
+  localStorage.setItem(dbKeys.chat, JSON.stringify(state.chat.slice(-30)));
+  renderChat();
+}
+
+function openAdminDialog() {
+  els.adminLoginForm.hidden = false;
+  els.adminPanel.hidden = true;
+  els.adminPassword.value = "";
+  els.adminDialog.showModal();
+}
+
+async function enterAdmin(event) {
+  event.preventDefault();
+  if (els.adminPassword.value !== "8396237387") {
+    showToast(t("adminDenied"));
+    return;
+  }
+  els.adminLoginForm.hidden = true;
+  els.adminPanel.hidden = false;
+  await renderAdminCodes();
+}
+
+function localAdminCodes() {
+  try {
+    return JSON.parse(localStorage.getItem(dbKeys.adminCodes)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalAdminCodes(codes) {
+  localStorage.setItem(dbKeys.adminCodes, JSON.stringify(codes));
+}
+
+async function fetchAdminCodes() {
+  try {
+    const response = await fetch("/api/admin/redeem-codes");
+    if (response.ok) return response.json();
+  } catch {
+    // Local static previews use localStorage.
+  }
+  return { codes: localAdminCodes() };
+}
+
+async function renderAdminCodes() {
+  const payload = await fetchAdminCodes();
+  const merged = [...localAdminCodes(), ...(payload.codes || [])];
+  const codes = merged
+    .filter((code) => code.code !== "041113")
+    .filter((code, index, list) => list.findIndex((item) => item.code === code.code) === index);
+  els.adminCodes.innerHTML =
+    codes
+      .map(
+        (code) => `
+          <div class="admin-code-row ${code.used ? "used" : ""}">
+            <strong>${code.code}</strong>
+            <span>${money(code.amount || 0)}</span>
+            <span>${code.used ? t("codeUsed") : t("codeValid")}</span>
+          </div>
+        `,
+      )
+      .join("") || `<p class="dialog-note">${state.lang === "zh" ? "还没有兑换码。" : "No redeem codes yet."}</p>`;
+  renderAdminAccounts();
+}
+
+function renderAdminAccounts() {
+  const hero = getHero();
+  const guest = {
+    name: state.user?.name || hero?.name || "Guest",
+    email: state.user?.email || "",
+    chips: hero?.stack ?? state.bankrolls.hero ?? 0,
+  };
+  const accounts = [guest, ...localAccounts()].filter(
+    (account, index, list) => list.findIndex((item) => (item.email || item.name) === (account.email || account.name)) === index,
+  );
+  els.adminAccounts.innerHTML =
+    accounts
+      .map(
+        (account) => `
+          <div class="admin-code-row account-row">
+            <strong>${account.name || account.email || "Guest"}</strong>
+            <span>${money(account.chips || 0)}</span>
+            <span>${account.email || "LOCAL"}</span>
+          </div>
+        `,
+      )
+      .join("");
+}
+
+async function createAdminCode(event) {
+  event.preventDefault();
+  const code = els.adminNewCode.value.trim();
+  const amount = Math.max(1, Math.round(Number(els.adminNewAmount.value || 1)));
+  if (!/^\d{6}$/.test(code) || code === "041113") {
+    showToast(t("redeemInvalid"));
+    return;
+  }
+  try {
+    const response = await fetch("/api/admin/redeem-codes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, amount }),
+    });
+    if (!response.ok) throw new Error("admin api unavailable");
+  } catch {
+    // Local static previews continue below with the browser-stored list.
+  }
+  const codes = localAdminCodes().filter((item) => item.code !== code);
+  codes.unshift({ code, amount, used: false, createdAt: new Date().toISOString() });
+  saveLocalAdminCodes(codes);
+  els.adminNewCode.value = "";
+  await renderAdminCodes();
+  showToast(t("adminCodeAdded"));
+}
+
 function saveAgentFromForm() {
   state.customAgent = {
     name: els.agentName.value.trim() || "River Oracle",
@@ -251,8 +955,16 @@ function saveAgentFromForm() {
   localStorage.setItem(dbKeys.agent, JSON.stringify(state.customAgent));
   syncAgentForm();
   refreshAgents();
+  setAgentSettingsOpen(false);
   render();
   showToast(t("agentSaved"));
+}
+
+function setAgentSettingsOpen(open) {
+  els.agentConsole.hidden = !open;
+  els.agentConsole.classList.toggle("collapsed", !open);
+  els.arena.classList.toggle("settings-open", open);
+  els.agentSettings.setAttribute("aria-expanded", String(open));
 }
 
 function syncAgentForm() {
@@ -265,7 +977,14 @@ function syncAgentForm() {
 }
 
 function money(value) {
-  return `$${Math.max(0, Math.round(value))}`;
+  return diamond(value);
+}
+
+function signedMoney(value) {
+  const rounded = Math.round(value);
+  if (rounded > 0) return `+${money(rounded)}`;
+  if (rounded < 0) return `-${money(Math.abs(rounded))}`;
+  return money(0);
 }
 
 function getHero() {
@@ -321,16 +1040,21 @@ function shuffle(cards) {
 }
 
 function startHand() {
+  saveCurrentStacks();
   state.deck = createDeck();
   state.community = [];
   state.street = "preflop";
+  state.result = null;
+  state.resultSummary = "";
+  state.resultDelta = 0;
   state.pot = 0;
   state.currentBet = baseBet;
   state.handId = nextHandId();
   state.archived = false;
+  state.pressureHand = state.winStreak >= 14;
   state.log = [];
   state.players = [
-    makePlayer("You", "HERO", false),
+    makePlayer(state.user?.name || (state.lang === "zh" ? "你" : "You"), "HERO", false),
     makePlayer("Vector-9", "TAG", true),
     makePlayer("Mira", "LAG", true),
     makePlayer("Old River", "NIT", true),
@@ -350,11 +1074,16 @@ function startHand() {
 }
 
 function makePlayer(name, style, bot) {
+  const key = bankrollKey(name, bot);
+  const stack = Math.max(0, Number(state.bankrolls[key] ?? 1000));
   return {
     name,
     style,
     bot,
-    stack: 1000,
+    bankrollKey: key,
+    tellSeed: Math.random(),
+    stack,
+    startStack: stack,
     cards: [],
     folded: false,
     committed: 0,
@@ -390,12 +1119,14 @@ function heroAction(action) {
   }
 
   if (action === "raise") {
-    commit(hero, state.currentBet + 60);
+    const customRaise = state.rewards.unlimitedRaise ? Math.max(baseBet, Math.round(Number(els.raiseAmount.value || 100))) : 60;
+    commit(hero, state.currentBet + customRaise);
     hero.lastAction = "raise";
     logLine(`Hero raises to ${money(hero.committed)}.`);
   } else {
+    const needsCall = state.currentBet > hero.committed;
     commit(hero, state.currentBet);
-    hero.lastAction = state.currentBet > hero.committed ? "call" : "check";
+    hero.lastAction = needsCall ? "call" : "check";
     logLine(`Hero ${hero.lastAction}s.`);
   }
   logLine(`${(state.customAgent || defaultAgent()).name}: ${state.lastExplanation}`);
@@ -425,13 +1156,13 @@ function runBots() {
   for (const bot of getActiveVillains()) {
     const strength = scoreToNormalized(evaluateCards([...bot.cards, ...state.community]).score);
     const aggression = bot.style === "LAG" ? 0.12 : bot.style === "NIT" ? -0.1 : 0;
-    const threshold = 0.43 + aggression - state.community.length * 0.025;
-    if (strength < threshold && Math.random() > 0.28) {
+    const threshold = (state.pressureHand ? 0.34 : 0.43) + aggression - state.community.length * 0.025;
+    if (!state.pressureHand && strength < threshold && Math.random() > 0.58) {
       bot.folded = true;
       bot.lastAction = "fold";
       logLine(`${bot.name} folds.`);
-    } else if (strength > 0.7 && bot.stack > 70) {
-      commit(bot, state.currentBet + 60);
+    } else if ((state.pressureHand && strength > 0.38) || (strength > 0.7 && bot.stack > 70)) {
+      commit(bot, state.currentBet + (state.pressureHand ? 90 : 60));
       bot.lastAction = "raise";
       state.currentBet = Math.max(state.currentBet, bot.committed);
       logLine(`${bot.name} raises.`);
@@ -465,40 +1196,83 @@ function advanceStreet() {
   render();
 }
 
+function shouldForceStreakLoss() {
+  return state.pressureHand && state.winStreak >= 14;
+}
+
 function archiveHand(result) {
   if (state.archived) return;
   state.archived = true;
   state.street = result === "folded" ? "folded" : state.street;
+  state.result = result;
 
   let winner = getHero();
   let heroWon = result === "win";
+  let winnerEval = null;
   if (result === "folded") {
     winner = state.players.slice(1).find((player) => !player.folded) || state.players[1];
     winner.stack += state.pot;
+    state.resultSummary = fillTemplate(t("resultByFold"), { winner: winner.name });
     logLine(`${winner.name} wins ${money(state.pot)} after hero folds.`);
   }
   if (result === "showdown") {
     const active = state.players.filter((player) => !player.folded);
     winner = active.sort((a, b) => evaluateCards([...b.cards, ...state.community]).score - evaluateCards([...a.cards, ...state.community]).score)[0];
     heroWon = winner === getHero();
+    if (heroWon && shouldForceStreakLoss()) {
+      winner = active.find((player) => player !== getHero()) || state.players[1];
+      heroWon = false;
+    }
+    winnerEval = evaluateCards([...winner.cards, ...state.community]);
     winner.stack += state.pot;
+    state.result = heroWon ? "win" : "lose";
     logLine(`${winner.name} wins ${money(state.pot)} at showdown.`);
   }
   if (result === "win") {
-    getHero().stack += state.pot;
-    logLine(`Hero wins ${money(state.pot)} uncontested.`);
+    if (shouldForceStreakLoss()) {
+      winner = state.players.slice(1).find((player) => player.stack >= 0) || state.players[1];
+      winner.stack += state.pot;
+      heroWon = false;
+      state.result = "lose";
+      winnerEval = evaluateCards([...winner.cards, ...state.community]);
+      logLine(`${winner.name} survives pressure and wins ${money(state.pot)}.`);
+    } else {
+      getHero().stack += state.pot;
+      state.resultSummary = "";
+      logLine(`Hero wins ${money(state.pot)} uncontested.`);
+    }
   }
 
   const heroEval = evaluateCards([...getHero().cards, ...state.community]);
+  state.resultDelta = getHero().stack - getHero().startStack;
+  if (result === "showdown") {
+    state.resultSummary = fillTemplate(shouldForceStreakLoss() && !heroWon ? t("streakPressureLose") : heroWon ? t("resultByShowdownWin") : t("resultByShowdownLose"), {
+      winner: winner.name,
+      winnerHand: winnerEval.name,
+      heroHand: heroEval.name,
+      pot: money(state.pot),
+    });
+  }
+  if (result === "win" && !heroWon) {
+    state.resultSummary = fillTemplate(t("streakPressureLose"), {
+      winner: winner.name,
+      winnerHand: winnerEval.name,
+      heroHand: heroEval.name,
+    });
+  }
+  updateWinStreak(heroWon);
+  state.lastExplanation = state.resultSummary;
   const hands = getHands();
   hands.unshift({
     id: state.handId,
-    result,
+    result: state.result,
     heroWon,
     winner: winner.name,
     pot: state.pot,
     street: state.street,
     handName: heroEval.name,
+    resultSummary: state.resultSummary,
+    resultDelta: state.resultDelta,
     heroCards: getHero().cards.map(cardLabel),
     board: state.community.map(cardLabel),
     explanation: state.lastExplanation,
@@ -507,6 +1281,7 @@ function archiveHand(result) {
   });
   rememberHand(hands[0]);
   saveHands(hands);
+  saveCurrentStacks();
   renderHandList();
 }
 
@@ -525,12 +1300,72 @@ function rememberHand(hand) {
   localStorage.setItem(dbKeys.agentMemory, JSON.stringify(state.agentMemory));
 }
 
+function updateWinStreak(heroWon) {
+  if (heroWon) {
+    state.winStreak += 1;
+    if (state.winStreak >= 5 && !state.rewards.opened5) state.rewards.chest5 = true;
+    if (state.winStreak >= 10 && !state.rewards.unlimitedRaise) {
+      state.rewards.unlimitedRaise = true;
+      showToast(t("unlimitedUnlocked"));
+    }
+    if (state.winStreak >= 15 && !state.rewards.opened15) state.rewards.chest15 = true;
+  } else {
+    state.winStreak = 0;
+  }
+  saveProgress();
+}
+
+function nextChestTarget() {
+  if (!state.rewards.opened5) return 5;
+  return 15;
+}
+
+function openStreakChest() {
+  const canOpen5 = state.rewards.chest5 && !state.rewards.opened5;
+  const canOpen15 = state.rewards.chest15 && !state.rewards.opened15;
+  if (!canOpen5 && !canOpen15) {
+    showToast(fillTemplate(t("chestLocked"), { target: nextChestTarget() }));
+    return;
+  }
+  const amount = canOpen15 ? 3000 : 500;
+  if (canOpen15) {
+    state.rewards.opened15 = true;
+    state.rewards.chest15 = false;
+  } else {
+    state.rewards.opened5 = true;
+    state.rewards.chest5 = false;
+  }
+  saveProgress();
+  addHeroChips(amount);
+  showToast(fillTemplate(t("chestReward"), { amount: money(amount) }));
+}
+
+function applyChipFamily() {
+  document.body.dataset.chipFamily = state.chipFamily || "classic";
+}
+
+function renderStreakPanel() {
+  if (!els.streakPanel) return;
+  els.streakCount.textContent = `${state.winStreak}`;
+  const ready = (state.rewards.chest5 && !state.rewards.opened5) || (state.rewards.chest15 && !state.rewards.opened15);
+  els.openChest.disabled = !ready;
+  els.openChest.textContent = ready
+    ? state.rewards.chest15 && !state.rewards.opened15
+      ? t("chestReady15")
+      : t("chestReady5")
+    : t("openChest");
+  els.raiseControl.hidden = !state.rewards.unlimitedRaise;
+  els.chipFamilyControl.hidden = !state.rewards.unlimitedRaise;
+  els.chipFamily.value = state.chipFamily;
+}
+
 function refreshAgents() {
   const hero = getHero();
   const heroEval = evaluateCards([...hero.cards, ...state.community]);
   const equity = estimateEquity(180);
   const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
-  const recommendation = recommendAction(equity, potOdds).label;
+  const recommendationResult = recommendAction(equity, potOdds);
+  const recommendation = recommendationResult.label;
   const risk = equity < 0.38 ? "High" : equity < 0.58 ? "Medium" : "Low";
   const zhAction = { RAISE: "加注", CALL: "跟注", CHECK: "过牌", FOLD: "弃牌" };
   const actionText = state.lang === "zh" ? zhAction[recommendation] : recommendation;
@@ -564,6 +1399,34 @@ function refreshAgents() {
     },
   ];
   state.lastExplanation = state.agents[0].text;
+  renderGuidance(recommendationResult.action, equity, potOdds, heroEval);
+}
+
+function renderGuidance(action, equity, potOdds, heroEval) {
+  const equityPct = Math.round(equity * 100);
+  const oddsPct = Math.round(potOdds * 100);
+  const actionText = actionName(action);
+  if (state.archived && state.resultSummary) {
+    els.agentGuidanceTitle.textContent = state.resultSummary;
+    return;
+  }
+  if (state.lang === "zh") {
+    const reason =
+      action === "raise"
+        ? `胜率约 ${equityPct}% 且当前牌型是${heroEval.name}，可以加压让弱牌和听牌付费。`
+        : action === "call"
+          ? `胜率约 ${equityPct}%，还高于继续投入的价格，先控制底池保留摊牌价值。`
+          : `胜率约 ${equityPct}% 低于底池赔率 ${oddsPct}%，继续投入不划算。`;
+    els.agentGuidanceTitle.textContent = `建议${actionText}：${reason}`;
+    return;
+  }
+  const reason =
+    action === "raise"
+      ? `equity is near ${equityPct}% and ${heroEval.name} can pressure weaker hands and draws.`
+      : action === "call"
+        ? `equity is near ${equityPct}%, enough to continue while keeping the pot controlled.`
+        : `equity is near ${equityPct}% versus ${oddsPct}% pot odds, so the price is too high.`;
+  els.agentGuidanceTitle.textContent = `Play ${actionText}: ${reason}`;
 }
 
 function recommendAction(equity, potOdds) {
@@ -790,14 +1653,20 @@ function cardLabel(card) {
 function render() {
   const hero = getHero();
   const heroEval = evaluateCards([...hero.cards, ...state.community]);
+  const equity = estimateEquity(60);
+  const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
+  const recommendation = recommendAction(equity, potOdds);
   els.handNumber.textContent = `#${state.handId}`;
   els.street.textContent = t(state.street === "folded" ? "foldedStreet" : state.street === "showdown" ? "showdownStreet" : state.street);
   els.pot.textContent = money(state.pot);
   els.centerPot.textContent = money(state.pot);
+  els.centerPotChips.innerHTML = chipStackHtml(state.pot);
   els.heroStack.textContent = money(hero.stack);
   els.bestHand.textContent = heroEval.name;
-  els.equityFill.style.width = `${Math.round(estimateEquity(60) * 100)}%`;
+  els.equityFill.style.width = `${Math.round(equity * 100)}%`;
   els.agentNarration.textContent = state.lastExplanation || state.agents[0]?.text || "";
+  renderGuidance(recommendation.action, equity, potOdds, heroEval);
+  renderResult();
 
   renderCards(els.community, state.community, false, 5);
   renderSeat(els.heroSeat, hero, false);
@@ -805,7 +1674,41 @@ function render() {
   renderAgents();
   renderLog();
   renderHandList();
+  renderStreakPanel();
+  renderLeaderboard();
   updateButtons();
+}
+
+function renderResult() {
+  if (!state.result) {
+    els.resultPanel.hidden = true;
+    els.resultPanel.className = "result-panel";
+    els.resultTitle.textContent = "";
+    els.resultDelta.textContent = "";
+    els.resultSummary.textContent = "";
+    return;
+  }
+  els.resultPanel.hidden = false;
+  els.resultPanel.className = "result-panel";
+  if (state.result === "win") {
+    els.resultTitle.textContent = `${t("resultWin")} · ${t("heroWins")}`;
+  } else if (state.result === "lose") {
+    els.resultTitle.textContent = `${t("resultLose")} · ${t("villainWins")}`;
+    els.resultPanel.classList.add("loss");
+  } else {
+    els.resultTitle.textContent = `${t("resultFold")} · ${t("folded")}`;
+    els.resultPanel.classList.add("neutral");
+  }
+  const delta = state.resultDelta || 0;
+  els.resultDelta.textContent =
+    delta > 0
+      ? fillTemplate(t("netWin"), { amount: signedMoney(delta) })
+      : delta < 0
+        ? fillTemplate(t("netLose"), { amount: money(Math.abs(delta)) })
+        : t("netEven");
+  els.resultDelta.classList.toggle("loss", delta < 0);
+  els.resultSummary.textContent = state.result === "win" ? "" : state.resultSummary;
+  els.status.textContent = state.resultSummary;
 }
 
 function renderCards(target, cards, hidden, slots = cards.length) {
@@ -819,7 +1722,7 @@ function cardNode(card, hidden) {
   const node = document.createElement("div");
   if (hidden) {
     node.className = "playing-card back";
-    node.textContent = "GRITH";
+    node.innerHTML = `<span class="card-back-word">GRITH</span>`;
     return node;
   }
   node.className = `playing-card ${card.color === "red" ? "red" : ""}`;
@@ -829,12 +1732,45 @@ function cardNode(card, hidden) {
 
 function renderSeat(target, player, hidden) {
   const status = player.folded ? "FOLD" : player.lastAction.toUpperCase();
+  const tell = player.bot ? opponentTell(player) : null;
+  const betAmount = player.committed;
   target.innerHTML = `
-    <h3>${player.name}</h3>
+    <div class="seat-shell">
+      ${tell ? `<div class="opponent-avatar ${tell.level}" aria-label="${tell.label}"></div>` : ""}
+      <div>
+        <h3>${player.name}</h3>
+        ${tell ? `<span class="tell-note">${tell.label}</span>` : ""}
+      </div>
+    </div>
     <div class="seat-meta"><span>${player.style}</span><span>${money(player.stack)}</span><span>${status}</span></div>
+    ${betAmount > 0 ? `<div class="seat-bet">${chipStackHtml(betAmount)}<strong>${money(betAmount)}</strong></div>` : ""}
     <div class="card-row"></div>
   `;
   renderCards(target.querySelector(".card-row"), player.cards, hidden, 2);
+}
+
+function chipStackHtml(amount) {
+  if (amount <= 0) return "";
+  const count = Math.max(1, Math.min(5, Math.ceil(amount / 40)));
+  return Array.from({ length: count }, (_, index) => `<span class="chip chip-${index + 1}"></span>`).join("");
+}
+
+function opponentTell(player) {
+  if (player.folded) return { level: "folded", label: t("tellFolded") };
+  const strength = scoreToNormalized(evaluateCards([...player.cards, ...state.community]).score);
+  const noise = Math.sin((state.handId + 1) * (player.tellSeed + 0.31) * 17) * 0.18;
+  const pressure = player.lastAction === "raise" ? 0.12 : player.lastAction === "call" ? 0.04 : 0;
+  const style = player.style === "LAG" ? 0.08 : player.style === "NIT" ? -0.06 : 0;
+  const tell = strength + noise + pressure + style;
+  const moodShift = Math.sin((state.handId + player.tellSeed) * 31 + player.stack / 23);
+  if (strength > 0.72 && tell < 0.58) return { level: "trap", label: t("tellTrap") };
+  if (strength < 0.42 && tell > 0.58) return { level: "bluff", label: t("tellBluff") };
+  if (tell > 0.74) return { level: moodShift > 0 ? "happy" : "angry", label: moodShift > 0 ? t("tellHappy") : t("tellAngry") };
+  if (tell > 0.62) return { level: "annoyed", label: t("tellAnnoyed") };
+  if (tell < 0.28) return { level: moodShift > 0 ? "sad" : "weak", label: moodShift > 0 ? t("tellSad") : t("tellWeak") };
+  if (tell < 0.42) return { level: "doubt", label: t("tellDoubt") };
+  if (Math.abs(noise) > 0.11) return { level: "nervous", label: t("tellNervous") };
+  return { level: "calm", label: t("tellCalm") };
 }
 
 function renderAgents() {
@@ -845,6 +1781,45 @@ function renderAgents() {
     node.innerHTML = `<strong>${agent.name}</strong><p>${agent.text}</p>`;
     els.agentCards.appendChild(node);
   }
+}
+
+function moduleContent(module) {
+  const hero = getHero();
+  const equity = hero ? estimateEquity(120) : 0;
+  const heroEval = hero ? evaluateCards([...hero.cards, ...state.community]) : null;
+  const activeVillains = getActiveVillains().length;
+  const modules = {
+    range: {
+      title: t("rangeScout"),
+      body: `${t("moduleRangeBody")} ${state.lang === "zh" ? "当前" : "Current"} ${Math.round(equity * 100)}% · ${heroEval?.name || "-"}.`,
+    },
+    coach: {
+      title: t("gtoCoach"),
+      body: `${t("moduleCoachBody")} ${state.lastExplanation || state.agents[0]?.text || ""}`,
+    },
+    risk: {
+      title: t("riskSentinel"),
+      body: `${t("moduleRiskBody")} ${state.lang === "zh" ? "仍在牌局中的对手" : "Active opponents"}: ${activeVillains}.`,
+    },
+    memory: {
+      title: t("tableMemory"),
+      body: `${t("moduleMemoryBody")} ${state.lang === "zh" ? "最近记录" : "Recent hands"}: ${state.agentMemory.length}.`,
+    },
+  };
+  return modules[module] || modules.range;
+}
+
+function showModule(module) {
+  const content = moduleContent(module);
+  els.modulePanel.hidden = false;
+  els.moduleLabel.textContent = t("moduleLabel");
+  els.moduleTitle.textContent = content.title;
+  els.moduleBody.textContent = content.body;
+  els.moduleButtons.forEach((button) => {
+    const active = button.dataset.module === module;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
 }
 
 function renderLog() {
@@ -873,6 +1848,43 @@ function renderHandList() {
   }
 }
 
+function playerWinRate(name, isHero) {
+  const hands = getHands();
+  if (!hands.length) return isHero ? 0 : 0.42;
+  if (isHero) return hands.filter((hand) => hand.heroWon).length / hands.length;
+  const wins = hands.filter((hand) => hand.winner === name).length;
+  return Math.max(0.18, Math.min(0.82, wins / hands.length + 0.28));
+}
+
+function renderLeaderboard() {
+  if (!els.leaderboardRows || !state.players.length) return;
+  const rows = state.players
+    .map((player, index) => ({
+      name: index === 0 ? state.user?.name || player.name : player.name,
+      stack: player.stack,
+      winRate: playerWinRate(player.name, index === 0),
+      hero: index === 0,
+    }))
+    .sort((a, b) => b.stack - a.stack);
+  els.leaderboardRows.innerHTML = rows
+    .map(
+      (row, index) => `
+        <div class="leaderboard-row ${row.hero ? "hero" : ""}">
+          <strong>#${index + 1} ${row.name}</strong>
+          <span>${money(row.stack)}</span>
+          <small>${t("leaderboardWinRate")} ${Math.round(row.winRate * 100)}%</small>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function setLeaderboardOpen(open) {
+  els.leaderboardDrawer.classList.toggle("open", open);
+  els.leaderboardDrawer.setAttribute("aria-hidden", String(!open));
+  if (open) renderLeaderboard();
+}
+
 function updateButtons() {
   const ended = state.archived || state.street === "showdown" || state.street === "folded";
   els.fold.disabled = ended;
@@ -886,8 +1898,12 @@ function renderLanguage() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+  });
   els.language.textContent = t("languageButton");
   els.help.setAttribute("aria-label", els.helpPanel.hidden ? t("helpClosedLabel") : t("helpOpenLabel"));
+  renderSession();
   if (state.players.length) {
     refreshAgents();
     render();
@@ -957,6 +1973,20 @@ function tone(frequency, duration) {
   osc.stop(context.currentTime + duration);
 }
 
+async function syncBackgroundMusic() {
+  if (!els.bgMusic) return;
+  els.bgMusic.volume = 0.28;
+  if (state.muted) {
+    els.bgMusic.pause();
+    return;
+  }
+  await els.bgMusic.play().catch(() => {
+    state.muted = true;
+    els.sound.textContent = "♪";
+    showToast(state.lang === "zh" ? "点击音符开启音乐。" : "Tap the note to start music.");
+  });
+}
+
 els.fold.addEventListener("click", () => heroAction("fold"));
 els.check.addEventListener("click", () => heroAction("call"));
 els.raise.addEventListener("click", () => heroAction("raise"));
@@ -973,6 +2003,51 @@ els.nextStreet.addEventListener("click", () => {
 });
 els.newHand.addEventListener("click", startHand);
 els.share.addEventListener("click", shareHand);
+els.googleSignIn.addEventListener("click", signInWithGoogle);
+els.invite.addEventListener("click", inviteFriend);
+els.agentSettings.addEventListener("click", () => setAgentSettingsOpen(els.agentConsole.hidden));
+els.buyChips.addEventListener("click", openBuyDialog);
+els.buyAmount.addEventListener("input", updateBuyPreview);
+els.buyForm.addEventListener("submit", buyChips);
+els.openChest.addEventListener("click", openStreakChest);
+els.chipFamily.addEventListener("change", () => {
+  state.chipFamily = els.chipFamily.value;
+  applyChipFamily();
+  saveProgress();
+});
+els.account.addEventListener("click", openAccountDialog);
+els.accountForm.addEventListener("submit", saveAccount);
+els.chatForm.addEventListener("submit", submitChat);
+els.adminEntry.addEventListener("click", openAdminDialog);
+els.adminLoginForm.addEventListener("submit", enterAdmin);
+els.adminCreateCodeForm.addEventListener("submit", createAdminCode);
+els.adminDialog.querySelector("[data-close-admin]").addEventListener("click", () => els.adminDialog.close());
+document.querySelectorAll("[data-dialog-close]").forEach((button) => {
+  button.addEventListener("click", () => button.closest("dialog")?.close());
+});
+els.redeem.addEventListener("click", toggleRedeemPanel);
+els.redeemPanel.addEventListener("submit", (event) => {
+  event.preventDefault();
+  redeemChips(getRedeemCode());
+});
+els.redeemDigits.forEach((input, index) => {
+  input.addEventListener("input", () => {
+    input.value = input.value.replace(/\D/g, "").slice(0, 1);
+    if (input.value && index < els.redeemDigits.length - 1) els.redeemDigits[index + 1].focus();
+  });
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Backspace" && !input.value && index > 0) els.redeemDigits[index - 1].focus();
+  });
+  input.addEventListener("paste", (event) => {
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+    event.preventDefault();
+    els.redeemDigits.forEach((digit, digitIndex) => {
+      digit.value = pasted[digitIndex] || "";
+    });
+    els.redeemDigits[Math.min(pasted.length, 6) - 1]?.focus();
+  });
+});
 els.agentForm.addEventListener("submit", (event) => {
   event.preventDefault();
   saveAgentFromForm();
@@ -992,9 +2067,42 @@ els.help.addEventListener("click", () => {
 els.sound.addEventListener("click", () => {
   state.muted = !state.muted;
   els.sound.textContent = state.muted ? "×" : "♪";
+  syncBackgroundMusic();
   showToast(state.muted ? t("soundOff") : t("soundOn"));
 });
+els.moduleButtons.forEach((button) => {
+  button.addEventListener("click", () => showModule(button.dataset.module));
+});
+els.leaderboardClose.addEventListener("click", () => setLeaderboardOpen(false));
+
+let touchStartX = 0;
+let touchStartY = 0;
+window.addEventListener(
+  "touchstart",
+  (event) => {
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  },
+  { passive: true },
+);
+window.addEventListener(
+  "touchend",
+  (event) => {
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if (touchStartX > window.innerWidth - 44 && dx < -50 && Math.abs(dy) < 90) setLeaderboardOpen(true);
+    if (els.leaderboardDrawer.classList.contains("open") && dx > 55 && Math.abs(dy) < 90) setLeaderboardOpen(false);
+  },
+  { passive: true },
+);
 
 loadAgent();
+loadBankrolls();
+loadProgress();
+loadSession();
+loadChat();
+setAgentSettingsOpen(false);
 renderLanguage();
 startHand();

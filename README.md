@@ -17,6 +17,10 @@ The project runs entirely in the browser. There is no backend, build step, API k
 - Lets the assistant play the current decision automatically.
 - Provides local analysis agents for equity, suggested action, and risk.
 - Stores finished hand summaries in `localStorage`.
+- Keeps diamond-chip stacks across hands and supports six-digit chip redemption through a Vercel serverless API.
+- Adds a chip purchase modal with an Alipay cashier API boundary.
+- Adds a local account settings dialog, Agent chat bubbles, and an Admin-only redeem-code manager.
+- Includes optional background music using Debussy's `Clair de lune`.
 - Generates shareable hand summary text.
 
 ## Demo Flow
@@ -49,12 +53,21 @@ http://127.0.0.1:3032
 
 ```text
 grith-cardgame/
-├── index.html   # Static app shell and UI panels
-├── styles.css   # Responsive GRITH visual system and poker-table layout
-├── script.js    # Poker engine, local agents, evaluator, i18n, and local DB
-├── README.md    # Project documentation
+├── api/agent/chat.js   # Agent chat API boundary
+├── api/auth/register.js # Email registration API boundary
+├── api/pay/alipay.js   # Alipay cashier order API boundary
+├── api/redeem.js       # Vercel serverless chip-code redemption endpoint
+├── clair-de-lune.ogg   # Optional background music asset
+├── index.html          # Static app shell and UI panels
+├── styles.css          # Responsive GRITH visual system and poker-table layout
+├── script.js           # Poker engine, local agents, evaluator, i18n, and local DB
+├── README.md           # Project documentation
 └── .gitignore
 ```
+
+## Music Credit
+
+The bundled background track is Claude Debussy's `Clair de lune` from `Suite bergamasque`, a public-domain composition. Keep the deployed audio file sourced from a public-domain or otherwise redistribution-safe recording, such as a Musopen/Wikimedia Commons style public-domain classical recording.
 
 ## Agent System
 
@@ -86,6 +99,29 @@ Because this is a static frontend, it can be deployed to any static host:
 - Any ordinary static file server
 
 For GitHub Pages, publish the repository root and set the entry file to `index.html`.
+
+For Vercel, deploy the `grith-cardgame` directory. The chip redemption endpoint expects these environment variables:
+
+```text
+CHIP_REDEEM_CODE=your-six-digit-code
+CHIP_REDEEM_AMOUNT=1000
+```
+
+## Payment And Account Architecture
+
+The current deployable version prepares the service boundaries needed for a real public game:
+
+- `POST /api/pay/alipay` creates an Alipay order. Production integration needs `ALIPAY_APP_ID`, `ALIPAY_PRIVATE_KEY`, `ALIPAY_PUBLIC_KEY`, `ALIPAY_GATEWAY`, and an async notify endpoint that credits chips only after Alipay confirms payment.
+- `POST /api/auth/register` is the email registration boundary. Production should store password hashes with a real database and session/JWT cookies.
+- `POST /api/agent/chat` is the Agent chat boundary. Production can connect this route to a model provider from the server, keeping API keys off the client.
+- `GET/POST /api/admin/redeem-codes` is the redeem-code manager boundary. Production should protect it with server-side admin auth and persistent storage.
+
+Recommended production stack:
+
+- Database: Supabase Postgres, Neon, PlanetScale, or Vercel Postgres.
+- Realtime multiplayer: WebSocket service such as PartyKit, Supabase Realtime, or a small Node/WebSocket server.
+- Auth: Supabase Auth, Clerk, Auth.js, or custom email/password with bcrypt/argon2.
+- Payments: Alipay Open Platform `alipay.trade.page.pay` or `alipay.trade.wap.pay`, with signed server-side requests and verified async notifications.
 
 ## Roadmap
 
