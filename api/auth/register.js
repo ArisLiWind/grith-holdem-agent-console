@@ -1,6 +1,7 @@
 const store = require("../_store");
+const { kvGetJson, kvSetJson } = require("../_kv");
 
-module.exports = function handler(request, response) {
+module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
     response.status(405).json({ ok: false });
     return;
@@ -13,14 +14,19 @@ module.exports = function handler(request, response) {
     return;
   }
 
-  const existing = store.users.find((user) => user.email === email);
+  const users = await kvGetJson("grith:users", store.users);
+  const existing = users.find((user) => user.email === email);
   if (existing) {
     existing.nickname = nickname;
     existing.updatedAt = new Date().toISOString();
+    store.users = users;
+    await kvSetJson("grith:users", users);
     response.status(200).json({ ok: true, user: { email, nickname } });
     return;
   }
 
-  store.users.push({ email, nickname, createdAt: new Date().toISOString() });
+  users.push({ email, nickname, createdAt: new Date().toISOString() });
+  store.users = users;
+  await kvSetJson("grith:users", users);
   response.status(200).json({ ok: true, user: { email, nickname } });
 };

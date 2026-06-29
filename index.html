@@ -90,25 +90,16 @@
       </section>
 
       <section id="streakPanel" class="streak-panel" aria-label="Win streak rewards">
-        <div>
+        <div class="streak-copy">
           <span class="panel-label" data-i18n="streakLabel">Win Streak</span>
-          <strong id="streakCount">0</strong>
+          <strong><span id="streakCount">0</span>/15</strong>
+          <p id="streakHint" data-i18n="streakGiftHint">Win 5 hands to claim 1888 chips. Win 15 for the 8888 grand pack.</p>
         </div>
-        <button id="openChestButton" class="primary-button" type="button" disabled data-i18n="openChest">Open Chest</button>
-        <label id="raiseControl" class="raise-control" hidden>
-          <span data-i18n="raiseAmount">Raise Amount</span>
-          <input id="raiseAmount" type="number" min="40" step="10" value="100" />
-        </label>
-        <label id="chipFamilyControl" class="raise-control" hidden>
-          <span data-i18n="chipFamily">Chip Family</span>
-          <select id="chipFamily">
-            <option value="classic" data-i18n="chipClassic">Classic</option>
-            <option value="ruby" data-i18n="chipRuby">Ruby</option>
-            <option value="ocean" data-i18n="chipOcean">Ocean</option>
-            <option value="royal" data-i18n="chipRoyal">Royal</option>
-            <option value="gold" data-i18n="chipGold">Gold</option>
-          </select>
-        </label>
+        <div class="streak-track" aria-hidden="true">
+          <span id="streakProgress"></span>
+          <i></i><i></i><i></i>
+        </div>
+        <button id="openChestButton" class="reward-button" type="button" disabled data-i18n="claimReward">Claim 1888</button>
       </section>
 
       <section id="arena" class="arena" aria-label="Poker arena">
@@ -147,6 +138,13 @@
           </div>
 
           <div class="action-bar">
+            <div class="wager-control" aria-label="Bet sizing">
+              <span data-i18n="wagerSize">Bet Size</span>
+              <button class="wager-chip active" type="button" data-wager="20">♦20</button>
+              <button class="wager-chip" type="button" data-wager="50">♦50</button>
+              <button class="wager-chip" type="button" data-wager="100">♦100</button>
+              <button class="wager-chip" type="button" data-wager="250">♦250</button>
+            </div>
             <button id="foldButton" class="primary-button danger" type="button" data-i18n="fold">Fold</button>
             <button id="checkButton" class="primary-button" type="button" data-i18n="checkCall">Check / Call</button>
             <button id="raiseButton" class="primary-button raise" type="button" data-i18n="raise">Raise</button>

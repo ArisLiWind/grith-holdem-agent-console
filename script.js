@@ -62,17 +62,15 @@ const copy = {
     openChest: "Open Chest",
     chestLocked: "Chest locked. Win {target} hands in a row.",
     chestReward: "Chest opened. {amount} chips added.",
-    chestReady5: "Five-win chest is ready.",
-    chestReady15: "Fifteen-win chest is ready.",
-    unlimitedUnlocked: "Ten-win streak unlocked unlimited raises and chip families.",
+    chestReady5: "Claim 1888",
+    chestReady15: "Claim 8888",
+    claimReward: "Claim 1888",
+    streakGiftHint: "Win 5 hands to claim 1888 chips. Win 15 for the 8888 grand pack.",
+    streakGiftHintReady: "Reward ready. Claim it now.",
+    streakGrandHint: "Keep going: win 15 hands for the 8888 chip grand pack. It will be difficult.",
+    unlimitedUnlocked: "Ten-win streak unlocked premium bet sizing.",
     streakPressureLose: "The streak pressure hand matched you against a stronger table; {winner} wins at showdown with {winnerHand}. You had {heroHand}.",
-    raiseAmount: "Raise Amount",
-    chipFamily: "Chip Family",
-    chipClassic: "Classic",
-    chipRuby: "Ruby",
-    chipOcean: "Ocean",
-    chipRoyal: "Royal",
-    chipGold: "Gold",
+    wagerSize: "Bet Size",
     room: "Room",
     guestStatus: "Guest mode. Sign in to show your player name.",
     inviteReady: "Invite links let a friend open the same room.",
@@ -212,17 +210,15 @@ const copy = {
     openChest: "开宝箱",
     chestLocked: "宝箱未解锁，需要连续赢 {target} 局。",
     chestReward: "宝箱已开启，增加 {amount} 筹码。",
-    chestReady5: "5 连胜宝箱已可开启。",
-    chestReady15: "15 连胜宝箱已可开启。",
-    unlimitedUnlocked: "10 连胜已解锁无限加注和筹码家族。",
+    chestReady5: "领取 1888",
+    chestReady15: "领取 8888",
+    claimReward: "领取 1888",
+    streakGiftHint: "连胜 5 局可领 1888 筹码；连胜 15 局可领 8888 筹码大礼包。",
+    streakGiftHintReady: "奖励已经点亮，点击金色按钮领取。",
+    streakGrandHint: "继续冲击：连胜 15 局可领 8888 筹码大礼包，但会很难。",
+    unlimitedUnlocked: "10 连胜已解锁高级下注档位。",
     streakPressureLose: "第 15 连胜压力局匹配到强桌，{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
-    raiseAmount: "加注金额",
-    chipFamily: "筹码家族",
-    chipClassic: "经典",
-    chipRuby: "红宝石",
-    chipOcean: "海蓝",
-    chipRoyal: "皇家紫",
-    chipGold: "金色",
+    wagerSize: "下注档位",
     room: "房间",
     guestStatus: "游客模式。登录后会显示你的玩家名。",
     inviteReady: "邀请链接可以让朋友打开同一个房间。",
@@ -364,9 +360,10 @@ const state = {
   resultDelta: 0,
   chat: [],
   winStreak: 0,
-  rewards: { chest5: false, chest15: false, opened5: false, opened15: false, unlimitedRaise: false },
+  rewards: { chest5: false, chest15: false, opened5: false, opened15: false, premiumWagers: false },
   chipFamily: "classic",
   pressureHand: false,
+  selectedWager: 20,
 };
 
 const els = {
@@ -383,11 +380,10 @@ const els = {
   bestHand: document.querySelector("#bestHand"),
   streakPanel: document.querySelector("#streakPanel"),
   streakCount: document.querySelector("#streakCount"),
+  streakProgress: document.querySelector("#streakProgress"),
+  streakHint: document.querySelector("#streakHint"),
   openChest: document.querySelector("#openChestButton"),
-  raiseControl: document.querySelector("#raiseControl"),
-  raiseAmount: document.querySelector("#raiseAmount"),
-  chipFamilyControl: document.querySelector("#chipFamilyControl"),
-  chipFamily: document.querySelector("#chipFamily"),
+  wagerButtons: [...document.querySelectorAll("[data-wager]")],
   equityFill: document.querySelector("#equityFill"),
   status: document.querySelector("#statusText"),
   community: document.querySelector("#communityCards"),
@@ -531,6 +527,7 @@ function loadProgress() {
     const progress = JSON.parse(localStorage.getItem(dbKeys.progress)) || {};
     state.winStreak = Number(progress.winStreak || 0);
     state.rewards = { ...state.rewards, ...(progress.rewards || {}) };
+    if (state.rewards.unlimitedRaise) state.rewards.premiumWagers = true;
     state.chipFamily = progress.chipFamily || "classic";
   } catch {
     state.winStreak = 0;
@@ -891,17 +888,24 @@ async function renderAdminCodes() {
         `,
       )
       .join("") || `<p class="dialog-note">${state.lang === "zh" ? "还没有兑换码。" : "No redeem codes yet."}</p>`;
-  renderAdminAccounts();
+  await renderAdminAccounts();
 }
 
-function renderAdminAccounts() {
+async function renderAdminAccounts() {
   const hero = getHero();
   const guest = {
     name: state.user?.name || hero?.name || "Guest",
     email: state.user?.email || "",
     chips: hero?.stack ?? state.bankrolls.hero ?? 0,
   };
-  const accounts = [guest, ...localAccounts()].filter(
+  let remoteAccounts = [];
+  try {
+    const response = await fetch("/api/admin/accounts");
+    if (response.ok) remoteAccounts = (await response.json()).accounts || [];
+  } catch {
+    remoteAccounts = [];
+  }
+  const accounts = [guest, ...remoteAccounts, ...localAccounts()].filter(
     (account, index, list) => list.findIndex((item) => (item.email || item.name) === (account.email || account.name)) === index,
   );
   els.adminAccounts.innerHTML =
@@ -1119,13 +1123,14 @@ function heroAction(action) {
   }
 
   if (action === "raise") {
-    const customRaise = state.rewards.unlimitedRaise ? Math.max(baseBet, Math.round(Number(els.raiseAmount.value || 100))) : 60;
+    const customRaise = Math.max(20, Number(state.selectedWager || 20));
     commit(hero, state.currentBet + customRaise);
     hero.lastAction = "raise";
     logLine(`Hero raises to ${money(hero.committed)}.`);
   } else {
     const needsCall = state.currentBet > hero.committed;
-    commit(hero, state.currentBet);
+    const callTarget = needsCall ? state.currentBet : hero.committed + Math.max(20, Number(state.selectedWager || 20));
+    commit(hero, callTarget);
     hero.lastAction = needsCall ? "call" : "check";
     logLine(`Hero ${hero.lastAction}s.`);
   }
@@ -1156,8 +1161,9 @@ function runBots() {
   for (const bot of getActiveVillains()) {
     const strength = scoreToNormalized(evaluateCards([...bot.cards, ...state.community]).score);
     const aggression = bot.style === "LAG" ? 0.12 : bot.style === "NIT" ? -0.1 : 0;
-    const threshold = (state.pressureHand ? 0.34 : 0.43) + aggression - state.community.length * 0.025;
-    if (!state.pressureHand && strength < threshold && Math.random() > 0.58) {
+    const earlyStreakBoost = state.winStreak < 14 ? 0.2 : 0;
+    const threshold = (state.pressureHand ? 0.34 : 0.52) + aggression + earlyStreakBoost - state.community.length * 0.025;
+    if (!state.pressureHand && strength < threshold && Math.random() > 0.18) {
       bot.folded = true;
       bot.lastAction = "fold";
       logLine(`${bot.name} folds.`);
@@ -1200,6 +1206,10 @@ function shouldForceStreakLoss() {
   return state.pressureHand && state.winStreak >= 14;
 }
 
+function shouldProtectStreakWin() {
+  return !state.pressureHand && state.winStreak < 14;
+}
+
 function archiveHand(result) {
   if (state.archived) return;
   state.archived = true;
@@ -1222,6 +1232,10 @@ function archiveHand(result) {
     if (heroWon && shouldForceStreakLoss()) {
       winner = active.find((player) => player !== getHero()) || state.players[1];
       heroWon = false;
+    }
+    if (!heroWon && shouldProtectStreakWin()) {
+      winner = getHero();
+      heroWon = true;
     }
     winnerEval = evaluateCards([...winner.cards, ...state.community]);
     winner.stack += state.pot;
@@ -1304,8 +1318,8 @@ function updateWinStreak(heroWon) {
   if (heroWon) {
     state.winStreak += 1;
     if (state.winStreak >= 5 && !state.rewards.opened5) state.rewards.chest5 = true;
-    if (state.winStreak >= 10 && !state.rewards.unlimitedRaise) {
-      state.rewards.unlimitedRaise = true;
+    if (state.winStreak >= 10 && !state.rewards.premiumWagers) {
+      state.rewards.premiumWagers = true;
       showToast(t("unlimitedUnlocked"));
     }
     if (state.winStreak >= 15 && !state.rewards.opened15) state.rewards.chest15 = true;
@@ -1327,7 +1341,7 @@ function openStreakChest() {
     showToast(fillTemplate(t("chestLocked"), { target: nextChestTarget() }));
     return;
   }
-  const amount = canOpen15 ? 3000 : 500;
+  const amount = canOpen15 ? 8888 : 1888;
   if (canOpen15) {
     state.rewards.opened15 = true;
     state.rewards.chest15 = false;
@@ -1348,15 +1362,16 @@ function renderStreakPanel() {
   if (!els.streakPanel) return;
   els.streakCount.textContent = `${state.winStreak}`;
   const ready = (state.rewards.chest5 && !state.rewards.opened5) || (state.rewards.chest15 && !state.rewards.opened15);
+  const progress = Math.min(100, Math.round((Math.min(state.winStreak, 15) / 15) * 100));
+  els.streakProgress.style.width = `${progress}%`;
   els.openChest.disabled = !ready;
   els.openChest.textContent = ready
     ? state.rewards.chest15 && !state.rewards.opened15
       ? t("chestReady15")
       : t("chestReady5")
-    : t("openChest");
-  els.raiseControl.hidden = !state.rewards.unlimitedRaise;
-  els.chipFamilyControl.hidden = !state.rewards.unlimitedRaise;
-  els.chipFamily.value = state.chipFamily;
+    : t("claimReward");
+  els.streakHint.textContent = ready ? t("streakGiftHintReady") : state.rewards.opened5 ? t("streakGrandHint") : t("streakGiftHint");
+  els.streakPanel.classList.toggle("reward-ready", ready);
 }
 
 function refreshAgents() {
@@ -1887,10 +1902,21 @@ function setLeaderboardOpen(open) {
 
 function updateButtons() {
   const ended = state.archived || state.street === "showdown" || state.street === "folded";
+  const hero = getHero();
+  const needsCall = hero && state.currentBet > hero.committed;
+  const wager = money(state.selectedWager || 20);
   els.fold.disabled = ended;
   els.check.disabled = ended;
   els.raise.disabled = ended;
   els.nextStreet.disabled = ended;
+  els.check.textContent = needsCall
+    ? state.lang === "zh"
+      ? `跟注 ${money(state.currentBet - hero.committed)}`
+      : `Call ${money(state.currentBet - hero.committed)}`
+    : state.lang === "zh"
+      ? `下注 ${wager}`
+      : `Bet ${wager}`;
+  els.raise.textContent = state.lang === "zh" ? `加注 ${wager}` : `Raise ${wager}`;
 }
 
 function renderLanguage() {
@@ -2010,10 +2036,12 @@ els.buyChips.addEventListener("click", openBuyDialog);
 els.buyAmount.addEventListener("input", updateBuyPreview);
 els.buyForm.addEventListener("submit", buyChips);
 els.openChest.addEventListener("click", openStreakChest);
-els.chipFamily.addEventListener("change", () => {
-  state.chipFamily = els.chipFamily.value;
-  applyChipFamily();
-  saveProgress();
+els.wagerButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.selectedWager = Number(button.dataset.wager || 20);
+    els.wagerButtons.forEach((item) => item.classList.toggle("active", item === button));
+    updateButtons();
+  });
 });
 els.account.addEventListener("click", openAccountDialog);
 els.accountForm.addEventListener("submit", saveAccount);

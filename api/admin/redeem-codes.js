@@ -1,12 +1,15 @@
 const store = require("../_store");
+const { kvGetJson, kvSetJson } = require("../_kv");
 
-function listCodes() {
-  return store.redeemCodes.filter((item) => item.code !== "041113");
+function listCodes(codes) {
+  return codes.filter((item) => item.code !== "041113");
 }
 
-module.exports = function handler(request, response) {
+module.exports = async function handler(request, response) {
+  const codes = await kvGetJson("grith:redeemCodes", store.redeemCodes);
+
   if (request.method === "GET") {
-    response.status(200).json({ codes: listCodes() });
+    response.status(200).json({ codes: listCodes(codes) });
     return;
   }
 
@@ -17,9 +20,10 @@ module.exports = function handler(request, response) {
       response.status(400).json({ ok: false });
       return;
     }
-    store.redeemCodes = store.redeemCodes.filter((item) => item.code !== code);
+    store.redeemCodes = codes.filter((item) => item.code !== code);
     store.redeemCodes.unshift({ code, amount, used: false, createdAt: new Date().toISOString() });
-    response.status(200).json({ ok: true, codes: listCodes() });
+    await kvSetJson("grith:redeemCodes", store.redeemCodes);
+    response.status(200).json({ ok: true, codes: listCodes(store.redeemCodes) });
     return;
   }
 

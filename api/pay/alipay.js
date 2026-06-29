@@ -1,6 +1,7 @@
 const store = require("../_store");
+const { kvGetJson, kvSetJson } = require("../_kv");
 
-module.exports = function handler(request, response) {
+module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
     response.status(405).json({ ok: false });
     return;
@@ -20,7 +21,10 @@ module.exports = function handler(request, response) {
     status: configured ? "created" : "demo",
     createdAt: new Date().toISOString(),
   };
-  store.payments.unshift(payment);
+  const payments = await kvGetJson("grith:payments", store.payments);
+  payments.unshift(payment);
+  store.payments = payments.slice(0, 200);
+  await kvSetJson("grith:payments", store.payments);
 
   response.status(200).json({
     ...payment,
