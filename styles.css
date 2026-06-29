@@ -483,6 +483,7 @@ h1 {
 
 .agent-cards {
   display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
@@ -491,6 +492,10 @@ h1 {
   background: var(--paper);
   padding: 10px;
   box-shadow: 4px 4px 0 var(--line);
+}
+
+.agent-card:first-child {
+  grid-column: 1 / -1;
 }
 
 .agent-card strong {
@@ -757,6 +762,10 @@ body[data-chip-family="gold"] .chip-2 {
   z-index: 3;
 }
 
+.seat[hidden] {
+  display: none;
+}
+
 .seat h3 {
   margin: 0;
   font-size: 14px;
@@ -997,6 +1006,18 @@ body[data-chip-family="gold"] .chip-2 {
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.seat-northwest {
+  top: 72px;
+  left: 18%;
+  transform: translateX(-50%);
+}
+
+.seat-northeast {
+  top: 72px;
+  right: 18%;
+  transform: translateX(50%);
 }
 
 .seat-west {
@@ -1483,7 +1504,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .game-shell {
-    padding: 8px 8px calc(126px + env(safe-area-inset-bottom));
+    padding: 8px 8px calc(150px + env(safe-area-inset-bottom));
   }
 
   .topbar {
@@ -1623,7 +1644,7 @@ body[data-chip-family="gold"] .chip-2 {
 
   .poker-table {
     display: grid;
-    min-height: min(620px, calc(100dvh - 250px));
+    min-height: min(560px, calc(100dvh - 210px));
     padding: 0;
     border-width: 4px;
     border-radius: 16px;
@@ -1635,16 +1656,16 @@ body[data-chip-family="gold"] .chip-2 {
 
   .seat {
     position: absolute;
-    width: 126px;
+    width: 108px;
     gap: 4px;
-    padding: 6px;
+    padding: 5px;
     border-width: 2px;
     box-shadow: 3px 3px 0 var(--line);
     font-size: 11px;
   }
 
   .seat h3 {
-    max-width: 78px;
+    max-width: 58px;
     overflow: hidden;
     font-size: 11px;
     text-overflow: ellipsis;
@@ -1657,31 +1678,43 @@ body[data-chip-family="gold"] .chip-2 {
     transform: translateX(-50%);
   }
 
+  .seat-northwest {
+    top: 62px;
+    left: 8px;
+    transform: none;
+  }
+
+  .seat-northeast {
+    top: 62px;
+    right: 8px;
+    transform: none;
+  }
+
   .seat-west {
-    top: 92px;
+    top: 150px;
     left: 8px;
     transform: none;
   }
 
   .seat-east {
-    top: 92px;
+    top: 150px;
     right: 8px;
     transform: none;
   }
 
   .hero-seat {
     left: 50%;
-    bottom: 72px;
-    width: min(238px, calc(100% - 44px));
+    bottom: 54px;
+    width: min(218px, calc(100% - 48px));
     transform: translateX(-50%);
     padding: 8px;
   }
 
   .board-zone {
     position: absolute;
-    top: 50%;
+    top: 54%;
     left: 50%;
-    width: min(330px, calc(100% - 28px));
+    width: min(292px, calc(100% - 26px));
     gap: 8px;
     padding: 10px;
     transform: translate(-50%, -50%);
@@ -1774,7 +1807,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .playing-card {
-    width: 45px;
+    width: 38px;
     border-width: 2px;
     border-radius: 6px;
     box-shadow: 3px 3px 0 var(--line);
@@ -1791,7 +1824,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .hero-seat .playing-card {
-    width: 56px;
+    width: 50px;
   }
 
   .hero-seat .playing-card .rank,
@@ -1804,17 +1837,17 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .seat .playing-card {
-    width: 36px;
+    width: 30px;
     padding: 3px;
   }
 
   .seat-shell {
-    grid-template-columns: 34px minmax(0, 1fr);
-    gap: 6px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 5px;
   }
 
   .opponent-avatar {
-    width: 34px;
+    width: 30px;
     border-width: 2px;
     border-radius: 6px;
   }
@@ -1888,7 +1921,7 @@ body[data-chip-family="gold"] .chip-2 {
 
   .seat .seat-meta {
     gap: 4px;
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .seat-bet {
@@ -1934,6 +1967,19 @@ body[data-chip-family="gold"] .chip-2 {
     font-size: 12px;
   }
 
+  .agent-cards {
+    gap: 6px;
+  }
+
+  .agent-card {
+    padding: 7px;
+  }
+
+  .agent-card:not(:first-child) p {
+    font-size: 10px;
+    line-height: 1.18;
+  }
+
   .module-panel h2 {
     font-size: 28px;
   }
@@ -1962,21 +2008,26 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .poker-table {
-    min-height: min(540px, calc(100dvh - 248px));
+    min-height: min(520px, calc(100dvh - 232px));
   }
 
   .seat {
-    width: 104px;
+    width: 94px;
     padding: 5px;
   }
 
   .seat-shell {
-    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-columns: 26px minmax(0, 1fr);
   }
 
   .seat-west,
   .seat-east {
-    top: 82px;
+    top: 142px;
+  }
+
+  .seat-northwest,
+  .seat-northeast {
+    top: 56px;
   }
 
   .seat-north {
@@ -1984,8 +2035,8 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .hero-seat {
-    bottom: 60px;
-    width: min(214px, calc(100% - 40px));
+    bottom: 48px;
+    width: min(196px, calc(100% - 48px));
   }
 
   .board-zone {
@@ -1994,20 +2045,20 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .playing-card {
-    width: 36px;
+    width: 34px;
   }
 
   .hero-seat .playing-card {
-    width: 50px;
+    width: 46px;
   }
 
   .seat .playing-card {
-    width: 31px;
+    width: 27px;
   }
 
   .seat h3 {
-    max-width: 62px;
-    font-size: 10px;
+    max-width: 52px;
+    font-size: 9px;
   }
 
   .seat .seat-meta,

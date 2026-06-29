@@ -58,6 +58,7 @@ const copy = {
     leaderboardTitle: "Player Rankings",
     leaderboardHint: "Swipe from the right edge to open this ranking panel.",
     leaderboardWinRate: "Win rate",
+    leaderboardWins: "Wins",
     streakLabel: "Win Streak",
     openChest: "Open Chest",
     chestLocked: "Chest locked. Win {target} hands in a row.",
@@ -68,6 +69,9 @@ const copy = {
     streakGiftHint: "Win 5 hands to claim 1888 chips. Win 15 for the 8888 grand pack.",
     streakGiftHintReady: "Reward ready. Claim it now.",
     streakGrandHint: "Keep going: win 15 hands for the 8888 chip grand pack. It will be difficult.",
+    streakNextPitch: "{count} more win to unlock the 500 USD prize track and 18888 chip dream.",
+    streakNextPitchPlural: "{count} more wins to unlock the 500 USD prize track and 18888 chip dream.",
+    sixPlayerNotice: "Hand 6 unlocked a six-player table. Two new opponents joined.",
     unlimitedUnlocked: "Ten-win streak unlocked premium bet sizing.",
     streakPressureLose: "The streak pressure hand matched you against a stronger table; {winner} wins at showdown with {winnerHand}. You had {heroHand}.",
     wagerSize: "Bet Size",
@@ -206,6 +210,7 @@ const copy = {
     leaderboardTitle: "玩家金额排行",
     leaderboardHint: "从屏幕右侧向内滑动可打开排行榜。",
     leaderboardWinRate: "胜率",
+    leaderboardWins: "胜场",
     streakLabel: "连胜",
     openChest: "开宝箱",
     chestLocked: "宝箱未解锁，需要连续赢 {target} 局。",
@@ -216,6 +221,9 @@ const copy = {
     streakGiftHint: "连胜 5 局可领 1888 筹码；连胜 15 局可领 8888 筹码大礼包。",
     streakGiftHintReady: "奖励已经点亮，点击金色按钮领取。",
     streakGrandHint: "继续冲击：连胜 15 局可领 8888 筹码大礼包，但会很难。",
+    streakNextPitch: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
+    streakNextPitchPlural: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
+    sixPlayerNotice: "第 6 局已解锁 6 人桌，两位新对手入座。",
     unlimitedUnlocked: "10 连胜已解锁高级下注档位。",
     streakPressureLose: "第 15 连胜压力局匹配到强桌，{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
     wagerSize: "下注档位",
@@ -335,6 +343,13 @@ const ranks = [
 ];
 const streetOrder = ["preflop", "flop", "turn", "river", "showdown"];
 const baseBet = 40;
+const botSeats = [
+  { name: "Vector-9", style: "TAG" },
+  { name: "Mira", style: "LAG" },
+  { name: "Old River", style: "NIT" },
+  { name: "Neon Jack", style: "TAG" },
+  { name: "Lotus-6", style: "LAG" },
+];
 
 const state = {
   deck: [],
@@ -392,6 +407,8 @@ const els = {
     document.querySelector("#villainNorth"),
     document.querySelector("#villainWest"),
     document.querySelector("#villainEast"),
+    document.querySelector("#villainNorthWest"),
+    document.querySelector("#villainNorthEast"),
   ],
   agentCards: document.querySelector("#agentCards"),
   agentConsole: document.querySelector("#agentConsole"),
@@ -415,6 +432,7 @@ const els = {
   googleSignIn: document.querySelector("#googleSignInButton"),
   invite: document.querySelector("#inviteButton"),
   agentSettings: document.querySelector("#agentSettingsButton"),
+  leaderboardButton: document.querySelector("#leaderboardButton"),
   buyChips: document.querySelector("#buyChipsButton"),
   redeem: document.querySelector("#redeemButton"),
   account: document.querySelector("#accountButton"),
@@ -1057,11 +1075,10 @@ function startHand() {
   state.archived = false;
   state.pressureHand = state.winStreak >= 14;
   state.log = [];
+  const activeBots = botSeats.slice(0, state.handId >= 6 ? 5 : 3);
   state.players = [
     makePlayer(state.user?.name || (state.lang === "zh" ? "你" : "You"), "HERO", false),
-    makePlayer("Vector-9", "TAG", true),
-    makePlayer("Mira", "LAG", true),
-    makePlayer("Old River", "NIT", true),
+    ...activeBots.map((bot) => makePlayer(bot.name, bot.style, true)),
   ];
 
   for (let i = 0; i < 2; i += 1) {
@@ -1073,6 +1090,7 @@ function startHand() {
   postBlind(state.players[1], 10);
   postBlind(state.players[2], 20);
   logLine(`Hand #${state.handId}: blinds posted. Hero is on the button.`);
+  if (state.handId === 6) showToast(t("sixPlayerNotice"));
   refreshAgents();
   render();
 }
@@ -1370,7 +1388,10 @@ function renderStreakPanel() {
       ? t("chestReady15")
       : t("chestReady5")
     : t("claimReward");
-  els.streakHint.textContent = ready ? t("streakGiftHintReady") : state.rewards.opened5 ? t("streakGrandHint") : t("streakGiftHint");
+  const nextTarget = state.rewards.opened5 ? 15 : 5;
+  const remaining = Math.max(1, nextTarget - state.winStreak);
+  const pitchKey = remaining === 1 ? "streakNextPitch" : "streakNextPitchPlural";
+  els.streakHint.textContent = ready ? t("streakGiftHintReady") : fillTemplate(t(pitchKey), { count: remaining });
   els.streakPanel.classList.toggle("reward-ready", ready);
 }
 
@@ -1389,7 +1410,7 @@ function refreshAgents() {
   state.agents = [
     {
       name: agent.name,
-      text: buildDeepExplanation(recommendation.toLowerCase(), equity, potOdds, heroEval, true),
+      text: buildHumanAdvice(recommendationResult.action, equity, potOdds, heroEval),
     },
     {
       name: state.lang === "zh" ? "范围侦察" : "Range Scout",
@@ -1444,6 +1465,20 @@ function renderGuidance(action, equity, potOdds, heroEval) {
   els.agentGuidanceTitle.textContent = `Play ${actionText}: ${reason}`;
 }
 
+function buildHumanAdvice(action, equity, potOdds, heroEval) {
+  const equityPct = Math.round(equity * 100);
+  const oddsPct = Math.round(potOdds * 100);
+  const active = getActiveVillains().length;
+  if (state.lang === "zh") {
+    if (action === "raise") return `这手可以主动一点。你现在是${heroEval.name}，胜率约 ${equityPct}%，对手还有 ${active} 个；加注是在逼弱牌付费，也让他们别便宜看下一张。`;
+    if (action === "call") return `我会先跟/过，不急着把底池做大。胜率约 ${equityPct}%，还能看下一街，但别把自己套进大底池。`;
+    return `我建议弃牌。胜率约 ${equityPct}%，继续投入要付出的价格接近 ${oddsPct}%，这手牌不值得硬扛。`;
+  }
+  if (action === "raise") return `I would take the lead. You have ${heroEval.name}, about ${equityPct}% equity, and ${active} live opponents. Make the weaker hands pay.`;
+  if (action === "call") return `I would check or call for now. Around ${equityPct}% equity is playable, but not worth inflating the pot.`;
+  return `I would fold. Equity is around ${equityPct}% and the price is near ${oddsPct}%, so forcing this hand is too expensive.`;
+}
+
 function recommendAction(equity, potOdds) {
   const hero = getHero();
   const agent = state.customAgent || defaultAgent();
@@ -1486,8 +1521,8 @@ function buildDeepExplanation(action, equity, potOdds, heroEval, compact = false
           : agent.personality === "exploit"
             ? "从剥削角度看，"
             : "冷静看这手牌，";
-    const text = `${tone}${agent.name} 使用 ${agent.model} 的 ${strategyName(agent.strategy)} 风格建议「${actionWord}」。你的手牌是 ${heroCards}，公共牌是 ${board}，当前成牌为 ${heroEval.name}，模拟胜率约 ${equityPct}%，底池赔率约 ${oddsPct}%。牌面结构${texture.zh}。这里的关键不是只看绝对牌力，而是比较“继续投入的价格”和“未来可实现胜率”：如果我们加注，是为了让边缘听牌和弱对子付出价格；如果只是跟注/过牌，是因为摊牌价值还在但不值得把底池迅速放大。${memoryLine.zh}`;
-    return compact ? text.slice(0, 210) + (text.length > 210 ? "..." : "") : text;
+    const text = `${tone}我建议「${actionWord}」。你拿 ${heroCards}，公共牌是 ${board}，现在是${heroEval.name}；胜率约 ${equityPct}%，继续投入的价格约 ${oddsPct}%。${texture.zh}。重点不是逞强，而是看这次投入能不能换到足够的后续机会。${memoryLine.zh}`;
+    return compact ? text.slice(0, 150) + (text.length > 150 ? "..." : "") : text;
   }
 
   const tone =
@@ -1498,8 +1533,8 @@ function buildDeepExplanation(action, equity, potOdds, heroEval, compact = false
         : agent.personality === "exploit"
           ? "Exploitatively, the important read is this: "
           : "Calmly, the hand asks for discipline: ";
-  const text = `${tone}${agent.name}, running the ${agent.model} profile with a ${strategyName(agent.strategy)} style, recommends ${actionWord}. Hero holds ${heroCards}; board is ${board}; current made hand is ${heroEval.name}; simulated equity is about ${equityPct}% against active ranges, while pot odds are near ${oddsPct}%. The board texture is ${texture.en}. The strategic point is not raw hand rank alone; it is whether our equity can be realized at this price. Raising pressures capped ranges and charges draws, checking/calling preserves showdown value, and folding protects the stack when the price exceeds our realizable equity. ${memoryLine.en}`;
-  return compact ? text.slice(0, 230) + (text.length > 230 ? "..." : "") : text;
+  const text = `${tone}I recommend ${actionWord}. Hero holds ${heroCards}; board is ${board}; made hand is ${heroEval.name}; equity is about ${equityPct}% and the price is near ${oddsPct}%. The point is simple: pay only when the next card or showdown value is worth it. ${memoryLine.en}`;
+  return compact ? text.slice(0, 160) + (text.length > 160 ? "..." : "") : text;
 }
 
 function boardTexture() {
@@ -1685,7 +1720,11 @@ function render() {
 
   renderCards(els.community, state.community, false, 5);
   renderSeat(els.heroSeat, hero, false);
-  state.players.slice(1).forEach((player, index) => renderSeat(els.villains[index], player, !state.archived));
+  els.villains.forEach((seat, index) => {
+    const player = state.players[index + 1];
+    seat.hidden = !player;
+    if (player) renderSeat(seat, player, !state.archived);
+  });
   renderAgents();
   renderLog();
   renderHandList();
@@ -1871,6 +1910,12 @@ function playerWinRate(name, isHero) {
   return Math.max(0.18, Math.min(0.82, wins / hands.length + 0.28));
 }
 
+function playerWins(name, isHero) {
+  const hands = getHands();
+  if (isHero) return hands.filter((hand) => hand.heroWon).length;
+  return hands.filter((hand) => hand.winner === name).length;
+}
+
 function renderLeaderboard() {
   if (!els.leaderboardRows || !state.players.length) return;
   const rows = state.players
@@ -1878,6 +1923,7 @@ function renderLeaderboard() {
       name: index === 0 ? state.user?.name || player.name : player.name,
       stack: player.stack,
       winRate: playerWinRate(player.name, index === 0),
+      wins: playerWins(player.name, index === 0),
       hero: index === 0,
     }))
     .sort((a, b) => b.stack - a.stack);
@@ -1887,7 +1933,7 @@ function renderLeaderboard() {
         <div class="leaderboard-row ${row.hero ? "hero" : ""}">
           <strong>#${index + 1} ${row.name}</strong>
           <span>${money(row.stack)}</span>
-          <small>${t("leaderboardWinRate")} ${Math.round(row.winRate * 100)}%</small>
+          <small>${t("leaderboardWinRate")} ${Math.round(row.winRate * 100)}% · ${t("leaderboardWins")} ${row.wins}</small>
         </div>
       `,
     )
@@ -2032,6 +2078,7 @@ els.share.addEventListener("click", shareHand);
 els.googleSignIn.addEventListener("click", signInWithGoogle);
 els.invite.addEventListener("click", inviteFriend);
 els.agentSettings.addEventListener("click", () => setAgentSettingsOpen(els.agentConsole.hidden));
+els.leaderboardButton.addEventListener("click", () => setLeaderboardOpen(true));
 els.buyChips.addEventListener("click", openBuyDialog);
 els.buyAmount.addEventListener("input", updateBuyPreview);
 els.buyForm.addEventListener("submit", buyChips);
