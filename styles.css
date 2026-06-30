@@ -50,9 +50,9 @@ button {
 }
 
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(260px, 1fr) minmax(420px, auto);
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
 }
@@ -97,10 +97,15 @@ h1 {
 }
 
 .top-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(118px, 1fr));
   justify-content: flex-end;
   gap: 10px;
+}
+
+.top-actions > button {
+  min-width: 132px;
+  min-height: 48px;
 }
 
 .icon-button,
@@ -117,7 +122,7 @@ h1 {
 }
 
 .icon-button {
-  width: 48px;
+  width: auto;
 }
 
 .share-button,
@@ -127,25 +132,40 @@ h1 {
 
 .account-button {
   display: inline-grid;
-  grid-template-columns: 42px auto;
+  grid-template-columns: 62px;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px 0 0;
+  justify-content: center;
+  width: 68px;
+  min-height: 62px;
+  padding: 0;
 }
 
 .account-avatar-badge {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 56px;
+  height: 56px;
   place-items: center;
-  border-right: 3px solid var(--line);
+  overflow: hidden;
+  border: 3px solid var(--line);
   background: var(--acid);
+  box-shadow: 3px 3px 0 var(--line);
   font-weight: 1000;
   font-size: 22px;
 }
 
+.account-avatar-badge img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .account-button-text {
-  font-weight: 950;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
 }
 
 .compact-button {
@@ -441,6 +461,20 @@ h1 {
   line-height: 0.95;
 }
 
+.mission-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-action {
+  min-width: 132px;
+  min-height: 42px;
+  padding: 0 14px;
+  background: #fffef7;
+}
+
 .agent-console h2 {
   margin-top: 6px;
   font-size: 24px;
@@ -507,7 +541,7 @@ h1 {
 
 .agent-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
@@ -519,7 +553,7 @@ h1 {
 }
 
 .agent-card:first-child {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
 .agent-card strong {
@@ -533,6 +567,40 @@ h1 {
   font-size: 13px;
   font-weight: 800;
   line-height: 1.25;
+}
+
+.agent-modules {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.agent-modules .mini-card {
+  display: grid;
+  align-content: center;
+  place-items: stretch;
+  gap: 2px;
+  min-height: 78px;
+  padding: 8px;
+  text-align: left;
+}
+
+.agent-modules .mini-card span,
+.agent-modules .mini-card small {
+  display: block;
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.agent-modules .mini-card b {
+  display: block;
+  font-size: clamp(20px, 2.5vw, 32px);
+  line-height: 0.95;
+}
+
+.agent-modules .module-panel {
+  grid-column: 1 / -1;
 }
 
 .streak-meter {
@@ -1564,8 +1632,8 @@ body[data-chip-family="gold"] .chip-2 {
     position: sticky;
     top: 0;
     z-index: 30;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    flex-direction: row;
     gap: 8px;
     padding: 8px;
     box-shadow: 4px 4px 0 var(--line);
@@ -1594,6 +1662,7 @@ body[data-chip-family="gold"] .chip-2 {
 
   .top-actions {
     display: flex;
+    grid-column: 1 / -1;
     flex: 1 1 auto;
     flex-wrap: nowrap;
     justify-content: flex-start;
@@ -1604,11 +1673,10 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .top-actions .share-button,
-  .top-actions .icon-button,
-  .top-actions .account-button {
+  .top-actions .icon-button {
     flex: 0 0 auto;
     width: auto;
-    min-width: 46px;
+    min-width: 118px;
     min-height: 38px;
     padding: 0 10px;
     white-space: nowrap;
@@ -1617,14 +1685,15 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .account-button {
-    grid-template-columns: 38px;
+    grid-template-columns: 44px;
+    width: 50px;
+    min-height: 50px;
     padding: 0;
   }
 
   .account-avatar-badge {
-    width: 38px;
-    height: 38px;
-    border-right: 0;
+    width: 44px;
+    height: 44px;
     font-size: 20px;
   }
 
@@ -1707,6 +1776,25 @@ body[data-chip-family="gold"] .chip-2 {
 
   .mission-panel {
     order: 2;
+  }
+
+  .mission-head {
+    align-items: flex-start;
+  }
+
+  .panel-action {
+    min-width: 112px;
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .agent-modules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .agent-modules .mini-card {
+    min-height: 62px;
   }
 
   .agent-console {

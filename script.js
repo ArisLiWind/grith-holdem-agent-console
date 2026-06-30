@@ -472,7 +472,7 @@ const els = {
   accountEmail: document.querySelector("#accountEmail"),
   accountWechat: document.querySelector("#accountWechat"),
   accountName: document.querySelector("#accountName"),
-  accountAvatarBadge: document.querySelector("#accountAvatarBadge"),
+  accountAvatarImage: document.querySelector("#accountAvatarImage"),
   accountAvatarPreview: document.querySelector("#accountAvatarPreview"),
   adminEntry: document.querySelector("#adminEntry"),
   adminDialog: document.querySelector("#adminDialog"),
@@ -605,8 +605,8 @@ function profileInitial(name = "") {
 
 function syncAccountAvatar() {
   const initial = profileInitial(state.user?.name || "Google Player");
-  if (els.accountAvatarBadge) els.accountAvatarBadge.textContent = initial;
   if (els.accountAvatarPreview) els.accountAvatarPreview.textContent = initial;
+  if (els.accountAvatarImage) els.accountAvatarImage.setAttribute("alt", `${state.user?.name || "Player"} avatar`);
 }
 
 function bankrollKey(name, bot) {
@@ -1846,6 +1846,7 @@ function render() {
     if (player) renderSeat(seat, player, !state.archived);
   });
   renderAgents();
+  renderAgentModules();
   renderLog();
   renderHandList();
   renderStreakPanel();
@@ -1949,12 +1950,51 @@ function opponentTell(player) {
 
 function renderAgents() {
   els.agentCards.innerHTML = "";
-  for (const agent of state.agents) {
+  for (const agent of state.agents.slice(0, 1)) {
     const node = document.createElement("article");
     node.className = "agent-card";
     node.innerHTML = `<strong>${agent.name}</strong><p>${agent.text}</p>`;
     els.agentCards.appendChild(node);
   }
+}
+
+function moduleMetric(module) {
+  const hero = getHero();
+  const equity = hero ? estimateEquity(120) : 0;
+  const heroEval = hero ? evaluateCards([...hero.cards, ...state.community]) : null;
+  const potOdds = hero && state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
+  const recommendation = hero ? recommendAction(equity, potOdds) : { action: "call" };
+  const risk = equity < 0.38 ? (state.lang === "zh" ? "高" : "High") : equity < 0.58 ? (state.lang === "zh" ? "中" : "Med") : state.lang === "zh" ? "低" : "Low";
+  const active = getActiveVillains().length;
+  const memory = state.agentMemory.length;
+  const actionText = actionName(recommendation.action);
+  const hand = heroEval?.name || "-";
+  const metrics = {
+    range:
+      state.lang === "zh"
+        ? { label: "范围侦察", value: `${Math.round(equity * 100)}%`, detail: `牌型 ${hand}` }
+        : { label: "Range Scout", value: `${Math.round(equity * 100)}%`, detail: hand },
+    coach:
+      state.lang === "zh"
+        ? { label: "策略教练", value: actionText, detail: `赔率 ${Math.round(potOdds * 100)}%` }
+        : { label: "GTO Coach", value: actionText, detail: `Odds ${Math.round(potOdds * 100)}%` },
+    risk:
+      state.lang === "zh"
+        ? { label: "风险哨兵", value: risk, detail: `对手 ${active} 名` }
+        : { label: "Risk Sentinel", value: risk, detail: `${active} active` },
+    memory:
+      state.lang === "zh"
+        ? { label: "牌桌记忆", value: `${memory}`, detail: "最近记录" }
+        : { label: "Table Memory", value: `${memory}`, detail: "hands" },
+  };
+  return metrics[module] || metrics.range;
+}
+
+function renderAgentModules() {
+  els.moduleButtons.forEach((button) => {
+    const metric = moduleMetric(button.dataset.module);
+    button.innerHTML = `<span>${metric.label}</span><b>${metric.value}</b><small>${metric.detail}</small>`;
+  });
 }
 
 function moduleContent(module) {
@@ -1984,6 +2024,7 @@ function moduleContent(module) {
 }
 
 function showModule(module) {
+  renderAgentModules();
   const content = moduleContent(module);
   els.modulePanel.hidden = false;
   els.moduleLabel.textContent = t("moduleLabel");
@@ -2096,6 +2137,7 @@ function renderLanguage() {
   els.language.textContent = t("languageButton");
   els.help.setAttribute("aria-label", els.helpPanel.hidden ? t("helpClosedLabel") : t("helpOpenLabel"));
   renderSession();
+  renderAgentModules();
   if (state.players.length) {
     refreshAgents();
     render();

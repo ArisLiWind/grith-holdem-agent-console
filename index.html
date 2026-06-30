@@ -9,6 +9,12 @@
   <body>
     <main class="game-shell">
       <header class="topbar">
+        <button id="accountButton" class="account-button" type="button" aria-label="Account settings">
+          <span class="account-avatar-badge">
+            <img id="accountAvatarImage" alt="" src="./player-avatar.svg" />
+          </span>
+          <span class="account-button-text" data-i18n="accountSettings">Account</span>
+        </button>
         <div class="brand-lockup" aria-label="GRITH Hold'em Agents">
           <span class="brand-mark">G</span>
           <div>
@@ -23,13 +29,8 @@
           <button id="googleSignInButton" class="share-button" type="button" data-i18n="googleSignIn">Google Sign In</button>
           <button id="wechatLoginButton" class="share-button" type="button" data-i18n="wechatLogin">WeChat Login</button>
           <button id="inviteButton" class="share-button" type="button" data-i18n="inviteFriend">Invite Friend</button>
-          <button id="agentSettingsButton" class="share-button" type="button" data-i18n="agentSettings">Agent Settings</button>
           <button id="buyChipsButton" class="share-button" type="button" data-i18n="buyChips">Buy Chips</button>
           <button id="redeemButton" class="share-button" type="button" data-i18n="redeemChips">Redeem Chips</button>
-          <button id="accountButton" class="account-button" type="button" aria-label="Account settings">
-            <span id="accountAvatarBadge" class="account-avatar-badge">G</span>
-            <span class="account-button-text" data-i18n="accountSettings">Account</span>
-          </button>
           <button id="leaderboardButton" class="share-button" type="button" data-i18n="leaderboard">Leaderboard</button>
           <button id="shareButton" class="share-button" type="button" data-i18n="shareHand">Share Hand</button>
         </div>
@@ -109,12 +110,26 @@
 
       <section id="arena" class="arena" aria-label="Poker arena">
         <aside class="mission-panel">
-          <div class="panel-label" data-i18n="agentDesk">Agent Desk</div>
+          <div class="mission-head">
+            <div class="panel-label" data-i18n="agentDesk">Agent Desk</div>
+            <button id="agentSettingsButton" class="share-button panel-action" type="button" data-i18n="agentSettings">Agent Settings</button>
+          </div>
           <h2 id="agentGuidanceTitle">Read the table. Ask the agents. Choose your line.</h2>
           <div id="agentCards" class="agent-cards"></div>
           <div class="streak-meter" aria-hidden="true">
             <span id="equityFill"></span>
           </div>
+          <section class="agent-modules" aria-label="Agent modules">
+            <button class="mini-card acid" type="button" data-module="range" data-i18n="rangeScout">RANGE SCOUT</button>
+            <button class="mini-card ember" type="button" data-module="coach" data-i18n="gtoCoach">GTO COACH</button>
+            <button class="mini-card cyan" type="button" data-module="risk" data-i18n="riskSentinel">RISK SENTINEL</button>
+            <button class="mini-card ink" type="button" data-module="memory" data-i18n="tableMemory">TABLE MEMORY</button>
+            <article id="modulePanel" class="module-panel" hidden>
+              <span id="moduleLabel" class="panel-label">Agent Module</span>
+              <h2 id="moduleTitle"></h2>
+              <p id="moduleBody"></p>
+            </article>
+          </section>
           <section class="agent-chat" aria-label="Agent chat">
             <div id="chatMessages" class="chat-messages"></div>
             <form id="chatForm" class="chat-form">
@@ -236,17 +251,6 @@
         </aside>
       </section>
 
-      <section class="collection-rail" aria-label="Agent modules">
-        <button class="mini-card acid" type="button" data-module="range" data-i18n="rangeScout">RANGE SCOUT</button>
-        <button class="mini-card ember" type="button" data-module="coach" data-i18n="gtoCoach">GTO COACH</button>
-        <button class="mini-card cyan" type="button" data-module="risk" data-i18n="riskSentinel">RISK SENTINEL</button>
-        <button class="mini-card ink" type="button" data-module="memory" data-i18n="tableMemory">TABLE MEMORY</button>
-        <article id="modulePanel" class="module-panel" hidden>
-          <span id="moduleLabel" class="panel-label">Agent Module</span>
-          <h2 id="moduleTitle"></h2>
-          <p id="moduleBody"></p>
-        </article>
-      </section>
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
