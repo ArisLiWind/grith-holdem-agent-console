@@ -9,12 +9,6 @@
   <body>
     <main class="game-shell">
       <header class="topbar">
-        <button id="accountButton" class="account-button" type="button" aria-label="Account settings">
-          <span class="account-avatar-badge">
-            <img id="accountAvatarImage" alt="" src="./player-avatar.svg" />
-          </span>
-          <span class="account-button-text" data-i18n="accountSettings">Account</span>
-        </button>
         <div class="brand-lockup" aria-label="GRITH Hold'em Agents">
           <span class="brand-mark">G</span>
           <div>
@@ -26,14 +20,16 @@
           <button id="soundToggle" class="icon-button" type="button" aria-label="Toggle sound">♪</button>
           <button id="languageToggle" class="share-button compact-button" type="button">中文</button>
           <button id="helpToggle" class="icon-button" type="button" aria-label="Toggle rules" aria-expanded="false">?</button>
-          <button id="googleSignInButton" class="share-button" type="button" data-i18n="googleSignIn">Google Sign In</button>
-          <button id="wechatLoginButton" class="share-button" type="button" data-i18n="wechatLogin">WeChat Login</button>
           <button id="inviteButton" class="share-button" type="button" data-i18n="inviteFriend">Invite Friend</button>
           <button id="buyChipsButton" class="share-button" type="button" data-i18n="buyChips">Buy Chips</button>
           <button id="redeemButton" class="share-button" type="button" data-i18n="redeemChips">Redeem Chips</button>
           <button id="leaderboardButton" class="share-button" type="button" data-i18n="leaderboard">Leaderboard</button>
           <button id="shareButton" class="share-button" type="button" data-i18n="shareHand">Share Hand</button>
         </div>
+        <button id="accountButton" class="account-button" type="button" aria-label="Account settings">
+          <span id="accountAvatarBadge" class="account-avatar-badge">G</span>
+          <span class="account-button-text" data-i18n="accountSettings">Account</span>
+        </button>
       </header>
 
       <section id="roomPanel" class="room-panel" aria-label="Room and login">
@@ -99,7 +95,7 @@
         <div class="streak-copy">
           <span class="panel-label" data-i18n="streakLabel">Win Streak</span>
           <strong><span id="streakCount">0</span>/<span id="streakGoal">15</span></strong>
-          <p id="streakHint" data-i18n="streakGiftHint">Win 5 more hands to enter the 500 USD and 18888 chip lottery!</p>
+          <p id="streakHint" data-i18n="streakGiftHint">Win more hands to enter the 500 USD and 18888 chip lottery!</p>
         </div>
         <div class="streak-track" aria-hidden="true">
           <span id="streakProgress"></span>
@@ -305,6 +301,10 @@
           <span data-i18n="wechat">WeChat</span>
           <input id="accountWechat" type="text" autocomplete="off" />
         </label>
+        <div class="account-login-actions">
+          <button id="googleSignInButton" class="share-button" type="button" data-i18n="googleSignIn">Google Sign In</button>
+          <button id="wechatLoginButton" class="share-button" type="button" data-i18n="wechatLogin">WeChat Login</button>
+        </div>
         <button class="primary-button" type="submit" data-i18n="saveAccount">Save Account</button>
         <p class="dialog-note" data-i18n="accountNote">Invite friends into the same room from the top bar.</p>
       </form>

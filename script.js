@@ -67,11 +67,11 @@ const copy = {
     chestReady5: "Draw",
     chestReady15: "Draw",
     claimReward: "Claim",
-    streakGiftHint: "Win 5 more hands to enter the 500 USD and 18888 chip lottery!",
+    streakGiftHint: "Win {count} more hands to enter the 500 USD and 18888 chip lottery!",
     streakGiftHintReady: "Lottery unlocked. Tap Draw to start.",
     streakGrandHint: "Total wins mission: reach 888 wins to qualify for 99 USD.",
-    streakNextPitch: "Win 5 more hands to enter the 500 USD and 18888 chip lottery!",
-    streakNextPitchPlural: "Win 5 more hands to enter the 500 USD and 18888 chip lottery!",
+    streakNextPitch: "Win {count} more hand to enter the 500 USD and 18888 chip lottery!",
+    streakNextPitchPlural: "Win {count} more hands to enter the 500 USD and 18888 chip lottery!",
     lotteryLabel: "Streak Lottery",
     lotteryTitle: "Draw the streak prize",
     lotteryDraw: "Start Draw",
@@ -231,11 +231,11 @@ const copy = {
     chestReady5: "抽奖",
     chestReady15: "抽奖",
     claimReward: "领取",
-    streakGiftHint: "您再连胜 5 局，可参与 500 美金与 18888 筹码抽奖！",
+    streakGiftHint: "您再连胜 {count} 局，可参与 500 美金与 18888 筹码抽奖！",
     streakGiftHintReady: "抽奖资格已解锁，点击抽奖开始。",
     streakGrandHint: "胜利局总数达到 888 局，可得到 99 美金的任务。",
-    streakNextPitch: "您再连胜 5 局，可参与 500 美金与 18888 筹码抽奖！",
-    streakNextPitchPlural: "您再连胜 5 局，可参与 500 美金与 18888 筹码抽奖！",
+    streakNextPitch: "您再连胜 {count} 局，可参与 500 美金与 18888 筹码抽奖！",
+    streakNextPitchPlural: "您再连胜 {count} 局，可参与 500 美金与 18888 筹码抽奖！",
     lotteryLabel: "连胜抽奖",
     lotteryTitle: "6 宫格抽奖",
     lotteryDraw: "开始抽奖",
@@ -496,7 +496,7 @@ const els = {
   accountEmail: document.querySelector("#accountEmail"),
   accountWechat: document.querySelector("#accountWechat"),
   accountName: document.querySelector("#accountName"),
-  accountAvatarImage: document.querySelector("#accountAvatarImage"),
+  accountAvatarBadge: document.querySelector("#accountAvatarBadge"),
   accountAvatarPreview: document.querySelector("#accountAvatarPreview"),
   adminEntry: document.querySelector("#adminEntry"),
   adminDialog: document.querySelector("#adminDialog"),
@@ -627,13 +627,16 @@ function saveLocalAccount(user) {
 
 function profileInitial(name = "") {
   const clean = String(name || "G").trim();
-  return clean ? clean[0].toUpperCase() : "G";
+  if (!clean) return "G";
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length > 1) return words.slice(0, 2).map((word) => word[0]).join("").toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
 }
 
 function syncAccountAvatar() {
   const initial = profileInitial(state.user?.name || "Google Player");
+  if (els.accountAvatarBadge) els.accountAvatarBadge.textContent = initial;
   if (els.accountAvatarPreview) els.accountAvatarPreview.textContent = initial;
-  if (els.accountAvatarImage) els.accountAvatarImage.setAttribute("alt", `${state.user?.name || "Player"} avatar`);
 }
 
 function bankrollKey(name, bot) {
@@ -1592,7 +1595,9 @@ function renderStreakPanel() {
     els.openChest.textContent = state.lang === "zh" ? "任务中" : "Mission";
     els.openChest.disabled = true;
   } else {
-    els.streakHint.textContent = ready ? t("streakGiftHintReady") : t("streakGiftHint");
+    const remaining = Math.max(1, 15 - state.winStreak);
+    const pitchKey = remaining === 1 ? "streakNextPitch" : "streakNextPitchPlural";
+    els.streakHint.textContent = ready ? t("streakGiftHintReady") : fillTemplate(t(pitchKey), { count: remaining });
   }
   els.streakPanel.classList.toggle("reward-ready", ready);
   els.streakPanel.classList.toggle("lottery-ready", ready);
