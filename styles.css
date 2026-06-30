@@ -342,10 +342,13 @@ h1 {
 }
 
 .streak-copy p {
-  color: rgba(244, 240, 223, 0.78);
-  font-size: 13px;
-  font-weight: 850;
+  display: inline-block;
+  width: fit-content;
+  color: #fff26a;
+  font-size: clamp(16px, 1.7vw, 22px);
+  font-weight: 1000;
   line-height: 1.25;
+  text-shadow: 0 0 16px rgba(255, 242, 106, 0.72);
 }
 
 .streak-track {
@@ -418,12 +421,57 @@ h1 {
   animation: rewardPulse 1.4s ease-in-out infinite;
 }
 
+.streak-panel.lottery-ready .reward-button {
+  background: #d8d6c4;
+  box-shadow:
+    5px 5px 0 var(--line),
+    0 0 20px rgba(244, 240, 223, 0.38);
+}
+
+.streak-panel.long-mission {
+  background:
+    radial-gradient(circle at 18% 50%, rgba(201, 255, 47, 0.24), transparent 28%),
+    linear-gradient(135deg, #11140f, #1e2513 58%, #10110d);
+}
+
 @keyframes rewardPulse {
   50% {
     box-shadow:
       var(--shadow),
       0 0 28px rgba(255, 212, 71, 0.72);
   }
+}
+
+.lottery-card {
+  width: min(560px, calc(100vw - 28px));
+}
+
+.lottery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.lottery-cell {
+  display: grid;
+  min-height: 98px;
+  place-items: center;
+  border: 3px solid var(--line);
+  background: #fffef7;
+  box-shadow: 4px 4px 0 var(--line);
+  padding: 10px;
+  text-align: center;
+  font-weight: 1000;
+  font-size: clamp(18px, 3vw, 30px);
+  line-height: 1.05;
+}
+
+.lottery-cell.active {
+  background: var(--acid);
+  box-shadow:
+    4px 4px 0 var(--line),
+    0 0 24px rgba(201, 255, 47, 0.92);
+  transform: translate(-1px, -1px);
 }
 
 .arena {
@@ -1721,7 +1769,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .streak-copy p {
-    font-size: 12px;
+    font-size: 16px;
   }
 
   .streak-track {
@@ -1731,6 +1779,16 @@ body[data-chip-family="gold"] .chip-2 {
   .reward-button {
     min-height: 42px;
     font-size: 13px;
+  }
+
+  .lottery-grid {
+    gap: 7px;
+  }
+
+  .lottery-cell {
+    min-height: 76px;
+    padding: 8px;
+    font-size: 18px;
   }
 
   .score-strip div {

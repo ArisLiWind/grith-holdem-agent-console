@@ -61,17 +61,26 @@ const copy = {
     leaderboardWinRate: "Win rate",
     leaderboardWins: "Wins",
     streakLabel: "Win Streak",
-    openChest: "Open Chest",
+    openChest: "Draw",
     chestLocked: "Chest locked. Win {target} hands in a row.",
-    chestReward: "Chest opened. {amount} chips added.",
-    chestReady5: "Claim 1888",
-    chestReady15: "Claim 8888",
-    claimReward: "Claim 1888",
-    streakGiftHint: "Win 5 hands to claim 1888 chips. Win 15 for the 8888 grand pack.",
-    streakGiftHintReady: "Reward ready. Claim it now.",
-    streakGrandHint: "Keep going: win 15 hands for the 8888 chip grand pack. It will be difficult.",
-    streakNextPitch: "{count} more win to unlock the 500 USD prize track and 18888 chip dream.",
-    streakNextPitchPlural: "{count} more wins to unlock the 500 USD prize track and 18888 chip dream.",
+    chestReward: "Draw complete. {amount} chips added.",
+    chestReady5: "Draw",
+    chestReady15: "Draw",
+    claimReward: "Claim",
+    streakGiftHint: "Win 5 more hands to enter the 500 USD and 18888 chip lottery!",
+    streakGiftHintReady: "Lottery unlocked. Tap Draw to start.",
+    streakGrandHint: "Total wins mission: reach 888 wins to qualify for 99 USD.",
+    streakNextPitch: "Win 5 more hands to enter the 500 USD and 18888 chip lottery!",
+    streakNextPitchPlural: "Win 5 more hands to enter the 500 USD and 18888 chip lottery!",
+    lotteryLabel: "Streak Lottery",
+    lotteryTitle: "Draw the streak prize",
+    lotteryDraw: "Start Draw",
+    lotteryDrawing: "Drawing...",
+    lotteryPrizeCash: "500 USD",
+    lotteryPrizeMega: "18888 Chips",
+    lotteryPrizeSmall: "100 Chips",
+    lotteryWonSmall: "You drew 100 chips.",
+    streakMission888: "Reach 888 total wins to unlock the 99 USD mission.",
     sixPlayerNotice: "Hand 10 raised single-player difficulty to a six-player table.",
     inviteSeatLocked: "Invite seats are open from the start.",
     unlimitedUnlocked: "Ten-win streak unlocked premium bet sizing.",
@@ -216,17 +225,26 @@ const copy = {
     leaderboardWinRate: "胜率",
     leaderboardWins: "胜场",
     streakLabel: "连胜",
-    openChest: "开宝箱",
+    openChest: "抽奖",
     chestLocked: "宝箱未解锁，需要连续赢 {target} 局。",
-    chestReward: "宝箱已开启，增加 {amount} 筹码。",
-    chestReady5: "领取 1888",
-    chestReady15: "领取 8888",
-    claimReward: "领取 1888",
-    streakGiftHint: "连胜 5 局可领 1888 筹码；连胜 15 局可领 8888 筹码大礼包。",
-    streakGiftHintReady: "奖励已经点亮，点击金色按钮领取。",
-    streakGrandHint: "继续冲击：连胜 15 局可领 8888 筹码大礼包，但会很难。",
-    streakNextPitch: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
-    streakNextPitchPlural: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
+    chestReward: "抽奖完成，增加 {amount} 筹码。",
+    chestReady5: "抽奖",
+    chestReady15: "抽奖",
+    claimReward: "领取",
+    streakGiftHint: "您再连胜 5 局，可参与 500 美金与 18888 筹码抽奖！",
+    streakGiftHintReady: "抽奖资格已解锁，点击抽奖开始。",
+    streakGrandHint: "胜利局总数达到 888 局，可得到 99 美金的任务。",
+    streakNextPitch: "您再连胜 5 局，可参与 500 美金与 18888 筹码抽奖！",
+    streakNextPitchPlural: "您再连胜 5 局，可参与 500 美金与 18888 筹码抽奖！",
+    lotteryLabel: "连胜抽奖",
+    lotteryTitle: "6 宫格抽奖",
+    lotteryDraw: "开始抽奖",
+    lotteryDrawing: "抽奖中...",
+    lotteryPrizeCash: "500 美金",
+    lotteryPrizeMega: "18888 筹码",
+    lotteryPrizeSmall: "100 筹码",
+    lotteryWonSmall: "成功抽中 100 筹码。",
+    streakMission888: "胜利局总数达到 888 局，可得到 99 美金的任务。",
     sixPlayerNotice: "单机打到第 10 局，牌桌已自动升级为 6 人难度。",
     inviteSeatLocked: "邀请入席从第一局就开放。",
     unlimitedUnlocked: "10 连胜已解锁高级下注档位。",
@@ -382,9 +400,10 @@ const state = {
   resultDelta: 0,
   chat: [],
   winStreak: 0,
-  rewards: { chest5: false, chest15: false, opened5: false, opened15: false, premiumWagers: false },
+  rewards: { chest5: false, chest15: false, opened5: false, opened15: false, premiumWagers: false, totalWins: 0 },
   chipFamily: "classic",
   pressureHand: false,
+  forceStreakLoss: false,
   selectedWager: 20,
   invitedSeats: 0,
   invitedRoom: false,
@@ -405,9 +424,14 @@ const els = {
   bestHand: document.querySelector("#bestHand"),
   streakPanel: document.querySelector("#streakPanel"),
   streakCount: document.querySelector("#streakCount"),
+  streakGoal: document.querySelector("#streakGoal"),
   streakProgress: document.querySelector("#streakProgress"),
   streakHint: document.querySelector("#streakHint"),
   openChest: document.querySelector("#openChestButton"),
+  lotteryDialog: document.querySelector("#lotteryDialog"),
+  lotteryGrid: document.querySelector("#lotteryGrid"),
+  lotteryDraw: document.querySelector("#lotteryDrawButton"),
+  lotteryResult: document.querySelector("#lotteryResult"),
   wagerButtons: [...document.querySelectorAll("[data-wager]")],
   equityFill: document.querySelector("#equityFill"),
   status: document.querySelector("#statusText"),
@@ -557,6 +581,9 @@ function loadProgress() {
     const progress = JSON.parse(localStorage.getItem(dbKeys.progress)) || {};
     state.winStreak = Number(progress.winStreak || 0);
     state.rewards = { ...state.rewards, ...(progress.rewards || {}) };
+    if (progress.rewards?.totalWins == null || !Number.isFinite(Number(state.rewards.totalWins))) {
+      state.rewards.totalWins = getHands().filter((hand) => hand.heroWon).length;
+    }
     if (state.rewards.unlimitedRaise) state.rewards.premiumWagers = true;
     state.chipFamily = progress.chipFamily || "classic";
   } catch {
@@ -1192,6 +1219,7 @@ function startHand() {
   state.handId = nextHandId();
   state.archived = false;
   state.pressureHand = state.winStreak >= 14;
+  state.forceStreakLoss = state.pressureHand && Math.random() >= 0.125;
   state.log = [];
   const extraSeats = state.invitedRoom ? maxInviteSeats : state.handId >= 10 ? maxInviteSeats : 0;
   const activeBots = botSeats.slice(0, 3 + extraSeats);
@@ -1340,7 +1368,7 @@ function advanceStreet() {
 }
 
 function shouldForceStreakLoss() {
-  return state.pressureHand && state.winStreak >= 14;
+  return state.pressureHand && state.winStreak >= 14 && state.forceStreakLoss;
 }
 
 function shouldProtectStreakWin() {
@@ -1454,6 +1482,7 @@ function rememberHand(hand) {
 function updateWinStreak(heroWon) {
   if (heroWon) {
     state.winStreak += 1;
+    state.rewards.totalWins = Number(state.rewards.totalWins || 0) + 1;
     if (state.winStreak >= 5 && !state.rewards.opened5) state.rewards.chest5 = true;
     if (state.winStreak >= 10 && !state.rewards.premiumWagers) {
       state.rewards.premiumWagers = true;
@@ -1478,7 +1507,34 @@ function openStreakChest() {
     showToast(fillTemplate(t("chestLocked"), { target: nextChestTarget() }));
     return;
   }
-  const amount = canOpen15 ? 8888 : 1888;
+  openLottery(canOpen15 ? "grand" : "entry");
+}
+
+function lotteryPrizes() {
+  return [t("lotteryPrizeCash"), t("lotteryPrizeMega"), t("lotteryPrizeSmall"), t("lotteryPrizeCash"), t("lotteryPrizeMega"), t("lotteryPrizeSmall")];
+}
+
+function renderLotteryGrid(activeIndex = -1) {
+  if (!els.lotteryGrid) return;
+  els.lotteryGrid.innerHTML = lotteryPrizes()
+    .map((prize, index) => `<div class="lottery-cell${index === activeIndex ? " active" : ""}">${prize}</div>`)
+    .join("");
+}
+
+function openLottery(tier) {
+  state.pendingLotteryTier = tier;
+  renderLotteryGrid();
+  if (els.lotteryResult) els.lotteryResult.textContent = tier === "grand" ? t("lotteryWonSmall") : t("streakGiftHintReady");
+  if (els.lotteryDraw) {
+    els.lotteryDraw.disabled = false;
+    els.lotteryDraw.textContent = t("lotteryDraw");
+  }
+  if (els.lotteryDialog) els.lotteryDialog.showModal();
+}
+
+function finishLottery() {
+  const canOpen15 = state.pendingLotteryTier === "grand";
+  const amount = 100;
   if (canOpen15) {
     state.rewards.opened15 = true;
     state.rewards.chest15 = false;
@@ -1488,7 +1544,30 @@ function openStreakChest() {
   }
   saveProgress();
   addHeroChips(amount);
-  showToast(fillTemplate(t("chestReward"), { amount: money(amount) }));
+  if (els.lotteryResult) els.lotteryResult.textContent = t("lotteryWonSmall");
+  showToast(fillTemplate(t("chestReward"), { amount: diamond(amount) }));
+  renderStreakPanel();
+}
+
+function drawLottery() {
+  if (!els.lotteryDraw) return;
+  els.lotteryDraw.disabled = true;
+  els.lotteryDraw.textContent = t("lotteryDrawing");
+  const stopIndex = 2;
+  const steps = 16;
+  let step = 0;
+  const tick = () => {
+    const index = step < steps ? step % 6 : stopIndex;
+    renderLotteryGrid(index);
+    if (step >= steps) {
+      finishLottery();
+      els.lotteryDraw.textContent = t("lotteryDraw");
+      return;
+    }
+    step += 1;
+    window.setTimeout(tick, 85 + step * 8);
+  };
+  tick();
 }
 
 function applyChipFamily() {
@@ -1497,21 +1576,27 @@ function applyChipFamily() {
 
 function renderStreakPanel() {
   if (!els.streakPanel) return;
-  els.streakCount.textContent = `${state.winStreak}`;
   const ready = (state.rewards.chest5 && !state.rewards.opened5) || (state.rewards.chest15 && !state.rewards.opened15);
-  const progress = Math.min(100, Math.round((Math.min(state.winStreak, 15) / 15) * 100));
+  const totalWins = Number(state.rewards.totalWins || 0);
+  const longMission = state.rewards.opened15;
+  const count = longMission ? Math.min(totalWins, 888) : state.winStreak;
+  const goal = longMission ? 888 : 15;
+  els.streakCount.textContent = `${count}`;
+  if (els.streakGoal) els.streakGoal.textContent = `${goal}`;
+  const progress = Math.min(100, Math.round((Math.min(count, goal) / goal) * 100));
   els.streakProgress.style.width = `${progress}%`;
   els.openChest.disabled = !ready;
-  els.openChest.textContent = ready
-    ? state.rewards.chest15 && !state.rewards.opened15
-      ? t("chestReady15")
-      : t("chestReady5")
-    : t("claimReward");
-  const nextTarget = state.rewards.opened5 ? 15 : 5;
-  const remaining = Math.max(1, nextTarget - state.winStreak);
-  const pitchKey = remaining === 1 ? "streakNextPitch" : "streakNextPitchPlural";
-  els.streakHint.textContent = ready ? t("streakGiftHintReady") : fillTemplate(t(pitchKey), { count: remaining });
+  els.openChest.textContent = state.winStreak >= 5 ? t("openChest") : t("claimReward");
+  if (longMission) {
+    els.streakHint.textContent = t("streakMission888");
+    els.openChest.textContent = state.lang === "zh" ? "任务中" : "Mission";
+    els.openChest.disabled = true;
+  } else {
+    els.streakHint.textContent = ready ? t("streakGiftHintReady") : t("streakGiftHint");
+  }
   els.streakPanel.classList.toggle("reward-ready", ready);
+  els.streakPanel.classList.toggle("lottery-ready", ready);
+  els.streakPanel.classList.toggle("long-mission", longMission);
 }
 
 function refreshAgents() {
@@ -2246,6 +2331,7 @@ els.buyChips.addEventListener("click", openBuyDialog);
 els.buyAmount.addEventListener("input", updateBuyPreview);
 els.buyForm.addEventListener("submit", buyChips);
 els.openChest.addEventListener("click", openStreakChest);
+els.lotteryDraw.addEventListener("click", drawLottery);
 els.wagerButtons.forEach((button) => {
   button.addEventListener("click", () => {
     state.selectedWager = Number(button.dataset.wager || 20);

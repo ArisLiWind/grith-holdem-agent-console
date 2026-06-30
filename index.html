@@ -98,14 +98,14 @@
       <section id="streakPanel" class="streak-panel" aria-label="Win streak rewards">
         <div class="streak-copy">
           <span class="panel-label" data-i18n="streakLabel">Win Streak</span>
-          <strong><span id="streakCount">0</span>/15</strong>
-          <p id="streakHint" data-i18n="streakGiftHint">Win 5 hands to claim 1888 chips. Win 15 for the 8888 grand pack.</p>
+          <strong><span id="streakCount">0</span>/<span id="streakGoal">15</span></strong>
+          <p id="streakHint" data-i18n="streakGiftHint">Win 5 more hands to enter the 500 USD and 18888 chip lottery!</p>
         </div>
         <div class="streak-track" aria-hidden="true">
           <span id="streakProgress"></span>
           <i></i><i></i><i></i>
         </div>
-        <button id="openChestButton" class="reward-button" type="button" disabled data-i18n="claimReward">Claim 1888</button>
+        <button id="openChestButton" class="reward-button" type="button" disabled data-i18n="claimReward">Claim</button>
       </section>
 
       <section id="arena" class="arena" aria-label="Poker arena">
@@ -255,6 +255,17 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <button id="adminEntry" class="admin-entry" type="button" aria-label="Admin">♣</button>
+
+    <dialog id="lotteryDialog" class="app-dialog">
+      <section class="dialog-card lottery-card">
+        <button class="dialog-close" type="button" data-dialog-close aria-label="Close">×</button>
+        <span class="panel-label" data-i18n="lotteryLabel">Streak Lottery</span>
+        <h2 data-i18n="lotteryTitle">Draw the streak prize</h2>
+        <div id="lotteryGrid" class="lottery-grid" aria-label="Lottery prizes"></div>
+        <button id="lotteryDrawButton" class="primary-button" type="button" data-i18n="lotteryDraw">Start Draw</button>
+        <p id="lotteryResult" class="dialog-note"></p>
+      </section>
+    </dialog>
 
     <dialog id="buyDialog" class="app-dialog">
       <form id="buyForm" method="dialog" class="dialog-card">
