@@ -1557,7 +1557,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .game-shell {
-    padding: 8px 8px calc(150px + env(safe-area-inset-bottom));
+    padding: 8px 8px calc(176px + env(safe-area-inset-bottom));
   }
 
   .topbar {
@@ -1702,6 +1702,7 @@ body[data-chip-family="gold"] .chip-2 {
   .table-zone {
     order: 1;
     gap: 10px;
+    min-height: 0;
   }
 
   .mission-panel {
@@ -1714,10 +1715,11 @@ body[data-chip-family="gold"] .chip-2 {
 
   .poker-table {
     display: grid;
-    min-height: min(560px, calc(100dvh - 210px));
+    width: 100%;
+    min-height: clamp(560px, calc(100dvh - 190px), 720px);
     padding: 0;
     border-width: 4px;
-    border-radius: 16px;
+    border-radius: 22px;
     box-shadow:
       inset 0 0 0 8px rgba(244, 240, 223, 0.16),
       0 0 0 1px rgba(17, 18, 15, 0.12);
@@ -1726,7 +1728,7 @@ body[data-chip-family="gold"] .chip-2 {
 
   .seat {
     position: absolute;
-    width: 108px;
+    width: 104px;
     gap: 4px;
     padding: 5px;
     border-width: 2px;
@@ -1735,7 +1737,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .seat h3 {
-    max-width: 58px;
+    max-width: 54px;
     overflow: hidden;
     font-size: 11px;
     text-overflow: ellipsis;
@@ -1743,48 +1745,48 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .seat-north {
-    top: 8px;
+    top: 12px;
     left: 50%;
     transform: translateX(-50%);
   }
 
   .seat-northwest {
-    top: 62px;
-    left: 8px;
+    top: 92px;
+    left: 10px;
     transform: none;
   }
 
   .seat-northeast {
-    top: 62px;
-    right: 8px;
+    top: 92px;
+    right: 10px;
     transform: none;
   }
 
   .seat-west {
-    top: 150px;
-    left: 8px;
+    top: 238px;
+    left: 10px;
     transform: none;
   }
 
   .seat-east {
-    top: 150px;
-    right: 8px;
+    top: 238px;
+    right: 10px;
     transform: none;
   }
 
   .hero-seat {
     left: 50%;
-    bottom: 54px;
-    width: min(218px, calc(100% - 48px));
+    bottom: 20px;
+    width: min(236px, calc(100% - 56px));
     transform: translateX(-50%);
     padding: 8px;
   }
 
   .board-zone {
     position: absolute;
-    top: 54%;
+    top: 51%;
     left: 50%;
-    width: min(292px, calc(100% - 26px));
+    width: min(312px, calc(100% - 28px));
     gap: 8px;
     padding: 10px;
     transform: translate(-50%, -50%);
@@ -1793,6 +1795,7 @@ body[data-chip-family="gold"] .chip-2 {
 
   .community-row {
     gap: 5px;
+    justify-content: center;
   }
 
   .action-bar {
@@ -1877,7 +1880,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .playing-card {
-    width: 38px;
+    width: 42px;
     border-width: 2px;
     border-radius: 6px;
     box-shadow: 3px 3px 0 var(--line);
@@ -1894,7 +1897,7 @@ body[data-chip-family="gold"] .chip-2 {
   }
 
   .hero-seat .playing-card {
-    width: 50px;
+    width: 56px;
   }
 
   .hero-seat .playing-card .rank,
@@ -2073,62 +2076,75 @@ body[data-chip-family="gold"] .chip-2 {
 
 @media (max-width: 420px) {
   .game-shell {
+    padding-bottom: calc(172px + env(safe-area-inset-bottom));
     padding-right: 6px;
     padding-left: 6px;
   }
 
   .poker-table {
-    min-height: min(520px, calc(100dvh - 232px));
+    min-height: clamp(560px, calc(100dvh - 175px), 680px);
+    border-radius: 20px;
   }
 
   .seat {
-    width: 94px;
-    padding: 5px;
+    width: 88px;
+    padding: 4px;
   }
 
   .seat-shell {
-    grid-template-columns: 26px minmax(0, 1fr);
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 4px;
   }
 
   .seat-west,
   .seat-east {
-    top: 142px;
+    top: 232px;
   }
 
   .seat-northwest,
   .seat-northeast {
-    top: 56px;
+    top: 88px;
   }
 
   .seat-north {
-    top: 7px;
+    top: 10px;
   }
 
   .hero-seat {
-    bottom: 48px;
-    width: min(196px, calc(100% - 48px));
+    bottom: 18px;
+    width: min(214px, calc(100% - 54px));
   }
 
   .board-zone {
-    width: calc(100% - 20px);
+    top: 50.5%;
+    width: calc(100% - 26px);
     padding: 8px;
   }
 
   .playing-card {
-    width: 34px;
+    width: 38px;
   }
 
   .hero-seat .playing-card {
-    width: 46px;
+    width: 52px;
   }
 
   .seat .playing-card {
-    width: 27px;
+    width: 25px;
   }
 
   .seat h3 {
-    max-width: 52px;
+    max-width: 48px;
     font-size: 9px;
+  }
+
+  .opponent-avatar {
+    width: 24px;
+  }
+
+  .seat .tell-note,
+  .seat-bet strong {
+    display: none;
   }
 
   .seat .seat-meta,

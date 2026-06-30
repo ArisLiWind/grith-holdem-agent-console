@@ -2,7 +2,7 @@
 
 GRITH Hold'em Agent Console is a static, browser-based Texas Hold'em table with a local AI-agent style decision console. It is designed as a playable product prototype: users can deal hands, read the board, ask for strategic advice, or let the assistant act for the hero seat.
 
-The project runs entirely in the browser. There is no backend, build step, API key, or external dependency required.
+The poker table runs in the browser, with Vercel serverless API boundaries for redeem codes, payments, account storage, WeChat OAuth, and River Oracle chat. Secrets must stay in Vercel environment variables, never in frontend code.
 
 ## What It Does
 
@@ -71,14 +71,14 @@ The bundled background track is Claude Debussy's `Clair de lune` from `Suite ber
 
 ## Agent System
 
-The app currently uses deterministic local helper agents instead of remote AI calls.
+The app uses deterministic helper agents for instant table feedback, and `POST /api/agent/chat` can call Volcengine Ark through the OpenAI-compatible chat completions API.
 
 - `Range Scout` estimates simulated equity from the current board.
 - `GTO Coach` recommends fold, check/call, or raise from equity and pot pressure.
 - `Risk Sentinel` summarizes danger level and opponent pressure.
 - The custom assistant profile changes the tone and strategy framing of advice.
 
-This keeps the prototype safe to publish as a static site because no model credential is exposed in frontend code.
+If Ark environment variables are missing, the backend returns a local natural-language fallback so the game stays playable. No model credential is exposed in frontend code.
 
 ## Poker Engine Notes
 
@@ -100,7 +100,32 @@ Because this is a static frontend, it can be deployed to any static host:
 
 For GitHub Pages, publish the repository root and set the entry file to `index.html`.
 
-For Vercel, deploy the `grith-cardgame` directory. The chip redemption endpoint expects these environment variables:
+For Vercel, deploy the `grith-cardgame` directory.
+
+Volcengine Ark chat needs these environment variables:
+
+```text
+ARK_API_KEY=your-volcengine-ark-api-key
+ARK_MODEL=your-enabled-ark-endpoint-or-model-id
+ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+```
+
+WeChat Open Platform website login needs these environment variables:
+
+```text
+WECHAT_OPEN_APP_ID=your-website-appid
+WECHAT_OPEN_APP_SECRET=your-website-appsecret
+WECHAT_REDIRECT_URI=https://grith-cardgame.vercel.app/api/auth/wechat-callback
+```
+
+Optional Vercel KV / Upstash Redis variables for persistence:
+
+```text
+KV_REST_API_URL=your-kv-url
+KV_REST_API_TOKEN=your-kv-token
+```
+
+Redeem code APIs no longer rely on a universal frontend code. Admin-created codes are recommended. Legacy local env support:
 
 ```text
 CHIP_REDEEM_CODE=your-six-digit-code
@@ -112,8 +137,9 @@ CHIP_REDEEM_AMOUNT=1000
 The current deployable version prepares the service boundaries needed for a real public game:
 
 - `POST /api/pay/alipay` creates an Alipay order. Production integration needs `ALIPAY_APP_ID`, `ALIPAY_PRIVATE_KEY`, `ALIPAY_PUBLIC_KEY`, `ALIPAY_GATEWAY`, and an async notify endpoint that credits chips only after Alipay confirms payment.
-- `POST /api/auth/register` is the email registration boundary. Production should store password hashes with a real database and session/JWT cookies.
-- `POST /api/agent/chat` is the Agent chat boundary. Production can connect this route to a model provider from the server, keeping API keys off the client.
+- `POST /api/auth/register` is the email/profile storage boundary. Production should store password hashes with a real database and session/JWT cookies if password login is enabled.
+- `GET /api/auth/wechat-login` starts WeChat QR OAuth login. `GET /api/auth/wechat-callback` exchanges the code for user info server-side.
+- `POST /api/agent/chat` is the Ark-powered Agent chat boundary. It reads `ARK_API_KEY` and `ARK_MODEL` only from the server environment.
 - `GET/POST /api/admin/redeem-codes` is the redeem-code manager boundary. Production should protect it with server-side admin auth and persistent storage.
 
 Recommended production stack:

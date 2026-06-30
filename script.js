@@ -18,6 +18,7 @@ const copy = {
     brandSub: "MULTI-AGENT POKER OPERATIONS",
     shareHand: "Share Hand",
     googleSignIn: "Google Sign In",
+    wechatLogin: "WeChat Login",
     inviteFriend: "Invite Friend Seat",
     agentSettings: "Agent Settings",
     buyChips: "Buy Chips",
@@ -71,14 +72,15 @@ const copy = {
     streakGrandHint: "Keep going: win 15 hands for the 8888 chip grand pack. It will be difficult.",
     streakNextPitch: "{count} more win to unlock the 500 USD prize track and 18888 chip dream.",
     streakNextPitchPlural: "{count} more wins to unlock the 500 USD prize track and 18888 chip dream.",
-    sixPlayerNotice: "Hand 10 allows invited friends to take extra seats.",
-    inviteSeatLocked: "Extra seats open after hand 10. The invite link still keeps this room.",
+    sixPlayerNotice: "Hand 10 raised single-player difficulty to a six-player table.",
+    inviteSeatLocked: "Invite seats are open from the start.",
     unlimitedUnlocked: "Ten-win streak unlocked premium bet sizing.",
     streakPressureLose: "The streak pressure hand matched you against a stronger table; {winner} wins at showdown with {winnerHand}. You had {heroHand}.",
     wagerSize: "Bet Size",
     room: "Room",
     guestStatus: "Guest mode. Sign in to show your player name.",
     inviteReady: "Invite a friend to sit in this room.",
+    wechatLoginConfigMissing: "WeChat login needs backend AppID/AppSecret configuration.",
     signedInAs: "Signed in as {name}.",
     inviteCopied: "Seat invite link copied.",
     inviteJoined: "Joined room {room}.",
@@ -171,6 +173,7 @@ const copy = {
     brandSub: "多 Agent 德州扑克作战系统",
     shareHand: "分享牌局",
     googleSignIn: "Google 登录",
+    wechatLogin: "微信扫码登录",
     inviteFriend: "邀请朋友入席",
     agentSettings: "Agent 设置",
     buyChips: "购买筹码",
@@ -224,14 +227,15 @@ const copy = {
     streakGrandHint: "继续冲击：连胜 15 局可领 8888 筹码大礼包，但会很难。",
     streakNextPitch: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
     streakNextPitchPlural: "您再连胜 {count} 局，可进入 500 美金大奖与 18888 筹码梦想奖励轨道。",
-    sixPlayerNotice: "第 10 局后开放额外入席，席位由邀请链接加入。",
-    inviteSeatLocked: "额外席位第 10 局后开放；邀请链接仍会进入同一个房间。",
+    sixPlayerNotice: "单机打到第 10 局，牌桌已自动升级为 6 人难度。",
+    inviteSeatLocked: "邀请入席从第一局就开放。",
     unlimitedUnlocked: "10 连胜已解锁高级下注档位。",
     streakPressureLose: "第 15 连胜压力局匹配到强桌，{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
     wagerSize: "下注档位",
     room: "房间",
     guestStatus: "游客模式。登录后会显示你的玩家名。",
     inviteReady: "邀请朋友打开同一个房间并入席。",
+    wechatLoginConfigMissing: "微信登录需要先配置后端 AppID/AppSecret。",
     signedInAs: "已登录为 {name}。",
     inviteCopied: "入席邀请链接已复制。",
     inviteJoined: "已加入房间 {room}。",
@@ -352,6 +356,7 @@ const botSeats = [
   { name: "Neon Jack", style: "TAG" },
   { name: "Lotus-6", style: "LAG" },
 ];
+const maxInviteSeats = 2;
 
 const state = {
   deck: [],
@@ -382,6 +387,7 @@ const state = {
   pressureHand: false,
   selectedWager: 20,
   invitedSeats: 0,
+  invitedRoom: false,
   aiAdviceToken: 0,
 };
 
@@ -434,6 +440,7 @@ const els = {
   newHand: document.querySelector("#newHandButton"),
   share: document.querySelector("#shareButton"),
   googleSignIn: document.querySelector("#googleSignInButton"),
+  wechatLogin: document.querySelector("#wechatLoginButton"),
   invite: document.querySelector("#inviteButton"),
   agentSettings: document.querySelector("#agentSettingsButton"),
   leaderboardButton: document.querySelector("#leaderboardButton"),
@@ -618,12 +625,27 @@ function saveCurrentStacks() {
 function loadSession() {
   const params = new URLSearchParams(window.location.search);
   const incomingRoom = params.get("room");
-  state.invitedSeats = params.get("seat") === "1" ? 1 : 0;
+  state.invitedRoom = params.get("seat") === "1" || params.get("invite") === "1";
+  state.invitedSeats = state.invitedRoom ? maxInviteSeats : 0;
   state.roomId = incomingRoom || localStorage.getItem(dbKeys.room) || createRoomId();
   localStorage.setItem(dbKeys.room, state.roomId);
   if (incomingRoom) showToast(fillTemplate(t("inviteJoined"), { room: incomingRoom }));
+  const wechatName = params.get("wechatName");
+  const wechatOpenId = params.get("wechatOpenId");
+  if (wechatName || wechatOpenId) {
+    state.user = {
+      ...(state.user || {}),
+      name: wechatName || state.user?.name || "WeChat Player",
+      wechat: wechatOpenId || state.user?.wechat || "",
+      provider: "wechat",
+      signedInAt: new Date().toISOString(),
+    };
+    localStorage.setItem(dbKeys.user, JSON.stringify(state.user));
+    saveLocalAccount(state.user);
+    window.history.replaceState({}, document.title, `${window.location.pathname}${incomingRoom ? `?room=${encodeURIComponent(state.roomId)}` : ""}`);
+  }
   try {
-    state.user = JSON.parse(localStorage.getItem(dbKeys.user));
+    state.user = state.user || JSON.parse(localStorage.getItem(dbKeys.user));
   } catch {
     state.user = null;
   }
@@ -667,6 +689,13 @@ function signInWithGoogle() {
   if (hero) hero.name = name;
   renderSession();
   render();
+}
+
+function loginWithWeChat() {
+  const url = new URL("/api/auth/wechat-login", window.location.origin);
+  url.searchParams.set("room", state.roomId);
+  url.searchParams.set("seat", state.invitedRoom ? "1" : "0");
+  window.location.href = String(url);
 }
 
 function openAccountDialog() {
@@ -714,7 +743,7 @@ async function inviteFriend() {
     await navigator.clipboard.writeText(String(url)).catch(() => {});
   }
   els.inviteStatus.textContent = String(url);
-  if (state.handId < 10) showToast(t("inviteSeatLocked"));
+  state.invitedSeats = maxInviteSeats;
   showToast(t("inviteCopied"));
 }
 
@@ -1164,7 +1193,7 @@ function startHand() {
   state.archived = false;
   state.pressureHand = state.winStreak >= 14;
   state.log = [];
-  const extraSeats = state.handId >= 10 ? Math.min(2, state.invitedSeats) : 0;
+  const extraSeats = state.invitedRoom ? maxInviteSeats : state.handId >= 10 ? maxInviteSeats : 0;
   const activeBots = botSeats.slice(0, 3 + extraSeats);
   state.players = [
     makePlayer(state.user?.name || (state.lang === "zh" ? "你" : "You"), "HERO", false),
@@ -2167,6 +2196,7 @@ els.nextStreet.addEventListener("click", () => {
 els.newHand.addEventListener("click", startHand);
 els.share.addEventListener("click", shareHand);
 els.googleSignIn.addEventListener("click", signInWithGoogle);
+els.wechatLogin.addEventListener("click", loginWithWeChat);
 els.invite.addEventListener("click", inviteFriend);
 els.agentSettings.addEventListener("click", () => setAgentSettingsOpen(els.agentConsole.hidden));
 els.leaderboardButton.addEventListener("click", () => setLeaderboardOpen(true));
