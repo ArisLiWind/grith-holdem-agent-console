@@ -473,6 +473,55 @@ h1 {
   transform: translate(-1px, -1px);
 }
 
+.settlement-card {
+  width: min(980px, calc(100vw - 28px));
+}
+
+.settlement-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 14px;
+}
+
+.settlement-hands {
+  display: grid;
+  gap: 12px;
+}
+
+.settlement-hand,
+.settlement-reason {
+  display: grid;
+  gap: 8px;
+  border: 3px solid var(--line);
+  background: #fffef7;
+  box-shadow: 4px 4px 0 var(--line);
+  padding: 12px;
+}
+
+.settlement-hand.winner {
+  background: var(--acid);
+}
+
+.settlement-hand.loser {
+  background: #fff2ed;
+}
+
+.settlement-hand strong,
+.settlement-reason strong {
+  font-size: clamp(20px, 3vw, 34px);
+  line-height: 0.95;
+}
+
+.settlement-reason p {
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.settlement-reason .loss {
+  color: var(--danger);
+}
+
 .arena {
   display: grid;
   grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
@@ -1804,6 +1853,15 @@ body[data-chip-family="gold"] .chip-2 {
     min-height: 76px;
     padding: 8px;
     font-size: 18px;
+  }
+
+  .settlement-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settlement-hand,
+  .settlement-reason {
+    padding: 9px;
   }
 
   .score-strip div {

@@ -96,11 +96,18 @@ const copy = {
     result: "Result",
     resultWin: "WIN",
     resultLose: "LOSE",
+    resultTie: "SPLIT",
     resultFold: "FOLDED",
     resultByFold: "You folded. {winner} wins the pot without showdown.",
     resultByUncontested: "You win because every opponent folded before showdown.",
     resultByShowdownWin: "You win at showdown with {heroHand}. {winner} takes {pot}.",
     resultByShowdownLose: "{winner} wins at showdown with {winnerHand}. You had {heroHand}.",
+    resultByShowdownTie: "The best five-card hands are identical, so the pot is split.",
+    settlementTitle: "Hand Result",
+    winningHand: "Winning Hand",
+    losingHand: "Losing Hand",
+    winningReason: "Why",
+    splitHand: "Split Pot",
     netWin: "Net win {amount}",
     netLose: "Net loss {amount}",
     netEven: "No net change",
@@ -260,11 +267,18 @@ const copy = {
     result: "结算",
     resultWin: "赢了",
     resultLose: "输了",
+    resultTie: "平分",
     resultFold: "已弃牌",
     resultByFold: "你选择弃牌，{winner} 无需摊牌赢得底池。",
     resultByUncontested: "你获胜：所有对手都在摊牌前弃牌。",
     resultByShowdownWin: "你摊牌获胜，牌型是 {heroHand}。{winner} 拿走 {pot}。",
     resultByShowdownLose: "{winner} 摊牌获胜，牌型是 {winnerHand}；你的牌型是 {heroHand}。",
+    resultByShowdownTie: "双方最佳五张牌完全相同，花色不参与胜负，因此平分底池。",
+    settlementTitle: "结算说明",
+    winningHand: "获胜最佳牌",
+    losingHand: "失败最佳牌",
+    winningReason: "获胜原因",
+    splitHand: "平分底池",
     netWin: "本局净赢 {amount}",
     netLose: "本局净输 {amount}",
     netEven: "本局筹码无变化",
@@ -394,6 +408,8 @@ const state = {
   lastExplanation: "",
   result: null,
   resultSummary: "",
+  showdownDetail: null,
+  settlementShown: false,
   user: null,
   roomId: "",
   bankrolls: {},
@@ -403,7 +419,6 @@ const state = {
   rewards: { chest5: false, chest15: false, opened5: false, opened15: false, premiumWagers: false, totalWins: 0 },
   chipFamily: "classic",
   pressureHand: false,
-  forceStreakLoss: false,
   selectedWager: 20,
   invitedSeats: 0,
   invitedRoom: false,
@@ -482,6 +497,16 @@ const els = {
   resultTitle: document.querySelector("#resultTitle"),
   resultDelta: document.querySelector("#resultDelta"),
   resultSummary: document.querySelector("#resultSummary"),
+  settlementDialog: document.querySelector("#settlementDialog"),
+  settlementHeadline: document.querySelector("#settlementHeadline"),
+  settlementWinnerName: document.querySelector("#settlementWinnerName"),
+  settlementWinnerCards: document.querySelector("#settlementWinnerCards"),
+  settlementWinnerType: document.querySelector("#settlementWinnerType"),
+  settlementLoserName: document.querySelector("#settlementLoserName"),
+  settlementLoserCards: document.querySelector("#settlementLoserCards"),
+  settlementLoserType: document.querySelector("#settlementLoserType"),
+  settlementReason: document.querySelector("#settlementReason"),
+  settlementDelta: document.querySelector("#settlementDelta"),
   centerPotChips: document.querySelector("#centerPotChips"),
   chatMessages: document.querySelector("#chatMessages"),
   chatForm: document.querySelector("#chatForm"),
@@ -1216,13 +1241,14 @@ function startHand() {
   state.street = "preflop";
   state.result = null;
   state.resultSummary = "";
+  state.showdownDetail = null;
+  state.settlementShown = false;
   state.resultDelta = 0;
   state.pot = 0;
   state.currentBet = baseBet;
   state.handId = nextHandId();
   state.archived = false;
   state.pressureHand = state.winStreak >= 14;
-  state.forceStreakLoss = state.pressureHand && Math.random() >= 0.125;
   state.log = [];
   const extraSeats = state.invitedRoom ? maxInviteSeats : state.handId >= 10 ? maxInviteSeats : 0;
   const activeBots = botSeats.slice(0, 3 + extraSeats);
@@ -1326,23 +1352,28 @@ function commit(player, target) {
 }
 
 function runBots() {
-  for (const bot of getActiveVillains()) {
+  const activeBefore = getActiveVillains();
+  let preflopCallers = 0;
+  for (const bot of activeBefore) {
     const strength = scoreToNormalized(evaluateCards([...bot.cards, ...state.community]).score);
     const aggression = bot.style === "LAG" ? 0.12 : bot.style === "NIT" ? -0.1 : 0;
-    const earlyStreakBoost = state.winStreak < 14 ? 0.2 : 0;
-    const threshold = (state.pressureHand ? 0.34 : 0.52) + aggression + earlyStreakBoost - state.community.length * 0.025;
-    if (!state.pressureHand && strength < threshold && Math.random() > 0.18) {
+    const isPreflop = state.street === "preflop";
+    const foldFloor = isPreflop && preflopCallers < Math.min(2, activeBefore.length) ? 0 : 0.08;
+    const threshold = isPreflop ? 0.28 + aggression * 0.25 : 0.5 + aggression - state.community.length * 0.025;
+    const foldChance = isPreflop ? Math.max(foldFloor, strength < threshold ? 0.18 : 0.04) : strength < threshold ? 0.54 : 0.08;
+    if (Math.random() < foldChance) {
       bot.folded = true;
       bot.lastAction = "fold";
       logLine(`${bot.name} folds.`);
-    } else if ((state.pressureHand && strength > 0.38) || (strength > 0.7 && bot.stack > 70)) {
-      commit(bot, state.currentBet + (state.pressureHand ? 90 : 60));
+    } else if ((isPreflop && strength > 0.72 && Math.random() < 0.32) || (!isPreflop && strength > 0.7 && bot.stack > 70)) {
+      commit(bot, state.currentBet + (state.pressureHand ? 80 : 60));
       bot.lastAction = "raise";
       state.currentBet = Math.max(state.currentBet, bot.committed);
       logLine(`${bot.name} raises.`);
     } else {
       commit(bot, state.currentBet);
       bot.lastAction = "call";
+      if (isPreflop) preflopCallers += 1;
       logLine(`${bot.name} calls.`);
     }
   }
@@ -1370,12 +1401,37 @@ function advanceStreet() {
   render();
 }
 
-function shouldForceStreakLoss() {
-  return state.pressureHand && state.winStreak >= 14 && state.forceStreakLoss;
+function compareEvaluations(left, right) {
+  return PokerEngine.compareEvaluations(left, right);
 }
 
-function shouldProtectStreakWin() {
-  return !state.pressureHand && state.winStreak < 14;
+function valueName(value) {
+  const labels = { 14: "A", 13: "K", 12: "Q", 11: "J", 10: "T", 9: "9", 8: "8", 7: "7", 6: "6", 5: "5", 4: "4", 3: "3", 2: "2" };
+  return labels[value] || String(value);
+}
+
+function describeHand(evalResult) {
+  const cards = evalResult.cards?.length ? ` (${evalResult.cards.map(cardLabel).join(" ")})` : "";
+  return `${evalResult.name}${cards}`;
+}
+
+function comparisonReason(winnerEval, loserEval, winnerName, loserName, tie = false) {
+  if (tie) {
+    return state.lang === "zh"
+      ? `${winnerName} 和 ${loserName} 的最佳五张牌完全相同：${describeHand(winnerEval)}。德州扑克不按花色分胜负，所以底池平分。`
+      : `${winnerName} and ${loserName} have the same best five-card hand: ${describeHand(winnerEval)}. Suits do not break ties in Texas Hold'em, so the pot is split.`;
+  }
+  if (winnerEval.category !== loserEval.category) {
+    return state.lang === "zh"
+      ? `${winnerName} 的最佳牌是${describeHand(winnerEval)}，${loserName} 的最佳牌是${describeHand(loserEval)}。${winnerEval.name} 高于 ${loserEval.name}，所以 ${winnerName} 赢得底池。`
+      : `${winnerName}'s best hand is ${describeHand(winnerEval)}, while ${loserName} has ${describeHand(loserEval)}. ${winnerEval.name} ranks above ${loserEval.name}, so ${winnerName} wins the pot.`;
+  }
+  const index = winnerEval.tiebreakers.findIndex((value, itemIndex) => value !== loserEval.tiebreakers[itemIndex]);
+  const winningValue = valueName(winnerEval.tiebreakers[index]);
+  const losingValue = valueName(loserEval.tiebreakers[index]);
+  return state.lang === "zh"
+    ? `双方同为${winnerEval.name}，继续比较主牌和 kicker。${winnerName} 的关键牌 ${winningValue} 大于 ${loserName} 的 ${losingValue}，所以 ${winnerName} 赢得底池。`
+    : `Both players have ${winnerEval.name}, so the main cards and kickers decide it. ${winnerName}'s deciding card ${winningValue} beats ${loserName}'s ${losingValue}, so ${winnerName} wins the pot.`;
 }
 
 function archiveHand(result) {
@@ -1383,10 +1439,14 @@ function archiveHand(result) {
   state.archived = true;
   state.street = result === "folded" ? "folded" : state.street;
   state.result = result;
+  state.settlementShown = false;
+  state.showdownDetail = null;
 
   let winner = getHero();
   let heroWon = result === "win";
   let winnerEval = null;
+  let loser = state.players.find((player) => player !== getHero()) || getHero();
+  let loserEval = null;
   if (result === "folded") {
     winner = state.players.slice(1).find((player) => !player.folded) || state.players[1];
     winner.stack += state.pot;
@@ -1395,52 +1455,77 @@ function archiveHand(result) {
   }
   if (result === "showdown") {
     const active = state.players.filter((player) => !player.folded);
-    winner = active.sort((a, b) => evaluateCards([...b.cards, ...state.community]).score - evaluateCards([...a.cards, ...state.community]).score)[0];
-    heroWon = winner === getHero();
-    if (heroWon && shouldForceStreakLoss()) {
-      winner = active.find((player) => player !== getHero()) || state.players[1];
-      heroWon = false;
-    }
-    if (!heroWon && shouldProtectStreakWin()) {
-      winner = getHero();
-      heroWon = true;
-    }
-    winnerEval = evaluateCards([...winner.cards, ...state.community]);
-    winner.stack += state.pot;
-    state.result = heroWon ? "win" : "lose";
-    logLine(`${winner.name} wins ${money(state.pot)} at showdown.`);
+    const ranked = active
+      .map((player) => ({ player, evalResult: evaluateCards([...player.cards, ...state.community]) }))
+      .sort((left, right) => compareEvaluations(right.evalResult, left.evalResult));
+    const bestEval = ranked[0].evalResult;
+    const winners = ranked.filter((item) => compareEvaluations(item.evalResult, bestEval) === 0);
+    const heroEntry = ranked.find((item) => item.player === getHero());
+    const heroIsWinner = winners.some((item) => item.player === getHero());
+    const isSplit = winners.length > 1;
+    const share = Math.floor(state.pot / winners.length);
+    let remainder = state.pot - share * winners.length;
+    winners.forEach((item) => {
+      item.player.stack += share + (remainder > 0 ? 1 : 0);
+      remainder -= 1;
+    });
+    winner = winners[0].player;
+    winnerEval = winners[0].evalResult;
+    loser = heroIsWinner ? ranked.find((item) => !winners.includes(item))?.player || ranked.find((item) => item.player !== getHero())?.player || winner : getHero();
+    loserEval = heroIsWinner ? ranked.find((item) => !winners.includes(item))?.evalResult || ranked.find((item) => item.player !== getHero())?.evalResult || winnerEval : heroEntry.evalResult;
+    heroWon = heroIsWinner && !isSplit;
+    state.result = heroIsWinner ? (isSplit ? "tie" : "win") : "lose";
+    state.resultSummary = isSplit && heroIsWinner ? t("resultByShowdownTie") : fillTemplate(heroWon ? t("resultByShowdownWin") : t("resultByShowdownLose"), {
+      winner: winner.name,
+      winnerHand: winnerEval.name,
+      heroHand: heroEntry.evalResult.name,
+      pot: money(state.pot),
+    });
+    state.showdownDetail = {
+      tie: isSplit && heroIsWinner,
+      winner: winner.name,
+      loser: loser.name,
+      winnerEval,
+      loserEval,
+      reason: comparisonReason(winnerEval, loserEval, winner.name, loser.name, isSplit && heroIsWinner),
+      winners: winners.map((item) => item.player.name),
+    };
+    logLine(`${winners.map((item) => item.player.name).join(", ")} ${isSplit ? "split" : "wins"} ${money(state.pot)} at showdown.`);
   }
   if (result === "win") {
-    if (shouldForceStreakLoss()) {
-      winner = state.players.slice(1).find((player) => player.stack >= 0) || state.players[1];
-      winner.stack += state.pot;
-      heroWon = false;
-      state.result = "lose";
-      winnerEval = evaluateCards([...winner.cards, ...state.community]);
-      logLine(`${winner.name} survives pressure and wins ${money(state.pot)}.`);
-    } else {
-      getHero().stack += state.pot;
-      state.resultSummary = "";
-      logLine(`Hero wins ${money(state.pot)} uncontested.`);
-    }
+    getHero().stack += state.pot;
+    state.resultSummary = fillTemplate(t("resultByUncontested"), {});
+    logLine(`Hero wins ${money(state.pot)} uncontested.`);
   }
 
   const heroEval = evaluateCards([...getHero().cards, ...state.community]);
   state.resultDelta = getHero().stack - getHero().startStack;
-  if (result === "showdown") {
-    state.resultSummary = fillTemplate(shouldForceStreakLoss() && !heroWon ? t("streakPressureLose") : heroWon ? t("resultByShowdownWin") : t("resultByShowdownLose"), {
+  if (!state.showdownDetail && winner !== getHero()) {
+    winnerEval = evaluateCards([...winner.cards, ...state.community]);
+    loserEval = heroEval;
+    state.showdownDetail = {
+      tie: false,
       winner: winner.name,
-      winnerHand: winnerEval.name,
-      heroHand: heroEval.name,
-      pot: money(state.pot),
-    });
+      loser: getHero().name,
+      winnerEval,
+      loserEval,
+      reason: state.resultSummary,
+      winners: [winner.name],
+    };
   }
-  if (result === "win" && !heroWon) {
-    state.resultSummary = fillTemplate(t("streakPressureLose"), {
-      winner: winner.name,
-      winnerHand: winnerEval.name,
-      heroHand: heroEval.name,
-    });
+  if (!state.showdownDetail) {
+    loser = state.players.find((player) => player !== getHero()) || getHero();
+    winnerEval = heroEval;
+    loserEval = evaluateCards([...loser.cards, ...state.community]);
+    state.showdownDetail = {
+      tie: false,
+      winner: getHero().name,
+      loser: loser.name,
+      winnerEval,
+      loserEval,
+      reason: state.resultSummary || t("resultByUncontested"),
+      winners: [getHero().name],
+    };
   }
   updateWinStreak(heroWon);
   state.lastExplanation = state.resultSummary;
@@ -1820,77 +1905,27 @@ function estimateEquity(trials) {
 }
 
 function evaluateCards(cards) {
-  if (cards.length < 5) return evaluateFive(cards);
-  let best = null;
-  const combos = combinations(cards, 5);
-  for (const combo of combos) {
-    const result = evaluateFive(combo);
-    if (!best || result.score > best.score) best = result;
-  }
-  return best;
+  const result = PokerEngine.evaluateCards(cards);
+  return { ...result, name: handName(result.category), cards: result.cards || [] };
 }
 
 function evaluateFive(cards) {
-  const values = cards.map((card) => card.value).sort((a, b) => b - a);
-  const counts = new Map();
-  for (const value of values) counts.set(value, (counts.get(value) || 0) + 1);
-  const groups = [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0]);
-  const flush = cards.length === 5 && cards.every((card) => card.suit === cards[0].suit);
-  const straightHigh = getStraightHigh(values);
-
-  let category = 0;
-  let kickers = [...values];
-  if (flush && straightHigh) {
-    category = 8;
-    kickers = [straightHigh];
-  } else if (groups[0]?.[1] === 4) {
-    category = 7;
-    kickers = [groups[0][0], ...values.filter((value) => value !== groups[0][0])];
-  } else if (groups[0]?.[1] === 3 && groups[1]?.[1] === 2) {
-    category = 6;
-    kickers = [groups[0][0], groups[1][0]];
-  } else if (flush) {
-    category = 5;
-  } else if (straightHigh) {
-    category = 4;
-    kickers = [straightHigh];
-  } else if (groups[0]?.[1] === 3) {
-    category = 3;
-    kickers = [groups[0][0], ...values.filter((value) => value !== groups[0][0])];
-  } else if (groups[0]?.[1] === 2 && groups[1]?.[1] === 2) {
-    category = 2;
-    const pairs = groups.filter((group) => group[1] === 2).map((group) => group[0]).sort((a, b) => b - a);
-    kickers = [...pairs, ...values.filter((value) => !pairs.includes(value))];
-  } else if (groups[0]?.[1] === 2) {
-    category = 1;
-    kickers = [groups[0][0], ...values.filter((value) => value !== groups[0][0])];
-  }
-
-  return {
-    category,
-    name: handName(category),
-    score: category * 1e10 + kickers.reduce((sum, value, index) => sum + value * 10 ** (8 - index * 2), 0),
-  };
+  const result = PokerEngine.evaluateFive(cards);
+  return { ...result, name: handName(result.category), cards: result.cards || [] };
 }
 
 function getStraightHigh(values) {
-  const unique = [...new Set(values)].sort((a, b) => b - a);
-  if (unique.includes(14)) unique.push(1);
-  for (let i = 0; i <= unique.length - 5; i += 1) {
-    const run = unique.slice(i, i + 5);
-    if (run[0] - run[4] === 4) return run[0];
-  }
-  return 0;
+  return PokerEngine.straightHigh(values);
 }
 
 function handName(category) {
-  const en = ["High Card", "Pair", "Two Pair", "Trips", "Straight", "Flush", "Full House", "Quads", "Straight Flush"];
-  const zh = ["高牌", "一对", "两对", "三条", "顺子", "同花", "葫芦", "四条", "同花顺"];
+  const en = ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush", "Royal Flush"];
+  const zh = ["高牌", "一对", "两对", "三条", "顺子", "同花", "葫芦", "四条", "同花顺", "皇家同花顺"];
   return state.lang === "zh" ? zh[category] : en[category];
 }
 
 function scoreToNormalized(score) {
-  return Math.min(0.98, Math.max(0.12, score / 8.141312111e10));
+  return Math.min(0.98, Math.max(0.12, score / PokerEngine.MAX_SCORE));
 }
 
 function combinations(items, size) {
@@ -1960,6 +1995,9 @@ function renderResult() {
   } else if (state.result === "lose") {
     els.resultTitle.textContent = `${t("resultLose")} · ${t("villainWins")}`;
     els.resultPanel.classList.add("loss");
+  } else if (state.result === "tie") {
+    els.resultTitle.textContent = `${t("resultTie")} · ${t("splitHand")}`;
+    els.resultPanel.classList.add("neutral");
   } else {
     els.resultTitle.textContent = `${t("resultFold")} · ${t("folded")}`;
     els.resultPanel.classList.add("neutral");
@@ -1972,8 +2010,39 @@ function renderResult() {
         ? fillTemplate(t("netLose"), { amount: money(Math.abs(delta)) })
         : t("netEven");
   els.resultDelta.classList.toggle("loss", delta < 0);
-  els.resultSummary.textContent = state.result === "win" ? "" : state.resultSummary;
+  els.resultSummary.textContent = state.resultSummary;
   els.status.textContent = state.resultSummary;
+  renderSettlementDialog();
+}
+
+function renderSettlementCards(target, cards) {
+  if (!target) return;
+  target.innerHTML = "";
+  const visibleCards = cards?.length ? cards : [];
+  for (const card of visibleCards) target.appendChild(cardNode(card, false));
+}
+
+function renderSettlementDialog() {
+  if (!state.showdownDetail || state.settlementShown || !els.settlementDialog) return;
+  const detail = state.showdownDetail;
+  els.settlementHeadline.textContent = detail.tie ? t("splitHand") : `${detail.winner} ${state.lang === "zh" ? "获胜" : "wins"}`;
+  els.settlementWinnerName.textContent = detail.tie ? detail.winners.join(" / ") : detail.winner;
+  els.settlementLoserName.textContent = detail.tie ? detail.loser : detail.loser;
+  els.settlementWinnerType.textContent = detail.winnerEval.name;
+  els.settlementLoserType.textContent = detail.loserEval.name;
+  els.settlementReason.textContent = detail.reason;
+  const delta = state.resultDelta || 0;
+  els.settlementDelta.textContent =
+    delta > 0
+      ? fillTemplate(t("netWin"), { amount: signedMoney(delta) })
+      : delta < 0
+        ? fillTemplate(t("netLose"), { amount: money(Math.abs(delta)) })
+        : t("netEven");
+  els.settlementDelta.classList.toggle("loss", delta < 0);
+  renderSettlementCards(els.settlementWinnerCards, detail.winnerEval.cards);
+  renderSettlementCards(els.settlementLoserCards, detail.loserEval.cards);
+  state.settlementShown = true;
+  els.settlementDialog.showModal();
 }
 
 function renderCards(target, cards, hidden, slots = cards.length) {
