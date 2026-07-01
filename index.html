@@ -174,6 +174,30 @@
             <strong id="resultTitle"></strong>
             <strong id="resultDelta" class="result-delta"></strong>
             <p id="resultSummary"></p>
+            <article id="settlementDetail" class="settlement-card" hidden>
+              <h2 id="settlementHeadline"></h2>
+              <div class="settlement-layout">
+                <div class="settlement-hands">
+                  <article class="settlement-hand winner">
+                    <span class="panel-label" data-i18n="winningHand">Winning Hand</span>
+                    <strong id="settlementWinnerName"></strong>
+                    <div id="settlementWinnerCards" class="card-row"></div>
+                    <p id="settlementWinnerType"></p>
+                  </article>
+                  <article class="settlement-hand loser">
+                    <span class="panel-label" data-i18n="losingHand">Losing Hand</span>
+                    <strong id="settlementLoserName"></strong>
+                    <div id="settlementLoserCards" class="card-row"></div>
+                    <p id="settlementLoserType"></p>
+                  </article>
+                </div>
+                <aside class="settlement-reason">
+                  <span class="panel-label" data-i18n="winningReason">Why</span>
+                  <p id="settlementReason"></p>
+                  <strong id="settlementDelta"></strong>
+                </aside>
+              </div>
+            </article>
           </section>
         </div>
 
@@ -345,35 +369,6 @@
       <div id="leaderboardRows" class="leaderboard-rows"></div>
       <p class="dialog-note" data-i18n="leaderboardHint">Swipe from the right edge to open this ranking panel.</p>
     </aside>
-
-    <dialog id="settlementDialog" class="app-dialog">
-      <section class="dialog-card settlement-card">
-        <button class="dialog-close" type="button" data-dialog-close aria-label="Close">×</button>
-        <span class="panel-label" data-i18n="settlementTitle">Hand Result</span>
-        <h2 id="settlementHeadline"></h2>
-        <div class="settlement-layout">
-          <div class="settlement-hands">
-            <article class="settlement-hand winner">
-              <span class="panel-label" data-i18n="winningHand">Winning Hand</span>
-              <strong id="settlementWinnerName"></strong>
-              <div id="settlementWinnerCards" class="card-row"></div>
-              <p id="settlementWinnerType"></p>
-            </article>
-            <article class="settlement-hand loser">
-              <span class="panel-label" data-i18n="losingHand">Losing Hand</span>
-              <strong id="settlementLoserName"></strong>
-              <div id="settlementLoserCards" class="card-row"></div>
-              <p id="settlementLoserType"></p>
-            </article>
-          </div>
-          <aside class="settlement-reason">
-            <span class="panel-label" data-i18n="winningReason">Why</span>
-            <p id="settlementReason"></p>
-            <strong id="settlementDelta"></strong>
-          </aside>
-        </div>
-      </section>
-    </dialog>
 
     <audio id="bgMusic" src="./clair-de-lune.ogg" loop preload="auto"></audio>
 

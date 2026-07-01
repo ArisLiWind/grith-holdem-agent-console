@@ -256,6 +256,14 @@ h1 {
   background: var(--cyan);
 }
 
+.share-button.attention,
+.primary-button.attention {
+  background: #ffd447;
+  box-shadow:
+    4px 4px 0 var(--line),
+    0 0 18px rgba(255, 212, 71, 0.82);
+}
+
 .primary-button:disabled {
   cursor: not-allowed;
   filter: grayscale(0.8);
@@ -475,6 +483,11 @@ h1 {
 
 .settlement-card {
   width: min(980px, calc(100vw - 28px));
+}
+
+.result-panel .settlement-card {
+  width: 100%;
+  margin-top: 8px;
 }
 
 .settlement-layout {

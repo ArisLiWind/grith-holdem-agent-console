@@ -108,6 +108,9 @@ const copy = {
     losingHand: "Losing Hand",
     winningReason: "Why",
     splitHand: "Split Pot",
+    noChipsTitle: "No chips left.",
+    noChipsHint: "You need chips to play the next hand. Buy chips to continue.",
+    buyToContinue: "You are out of chips. Buy chips to continue.",
     netWin: "Net win {amount}",
     netLose: "Net loss {amount}",
     netEven: "No net change",
@@ -279,6 +282,9 @@ const copy = {
     losingHand: "失败最佳牌",
     winningReason: "获胜原因",
     splitHand: "平分底池",
+    noChipsTitle: "筹码已用完。",
+    noChipsHint: "你需要筹码才能继续下一局，请购买筹码后继续。",
+    buyToContinue: "你的筹码已经为 0，请先购买筹码再继续游戏。",
     netWin: "本局净赢 {amount}",
     netLose: "本局净输 {amount}",
     netEven: "本局筹码无变化",
@@ -409,7 +415,6 @@ const state = {
   result: null,
   resultSummary: "",
   showdownDetail: null,
-  settlementShown: false,
   user: null,
   roomId: "",
   bankrolls: {},
@@ -497,7 +502,7 @@ const els = {
   resultTitle: document.querySelector("#resultTitle"),
   resultDelta: document.querySelector("#resultDelta"),
   resultSummary: document.querySelector("#resultSummary"),
-  settlementDialog: document.querySelector("#settlementDialog"),
+  settlementDetail: document.querySelector("#settlementDetail"),
   settlementHeadline: document.querySelector("#settlementHeadline"),
   settlementWinnerName: document.querySelector("#settlementWinnerName"),
   settlementWinnerCards: document.querySelector("#settlementWinnerCards"),
@@ -860,7 +865,13 @@ async function redeemChips(code) {
   }
   saveBankrolls();
   els.redeemPanel.hidden = true;
+  els.buyChips.classList.remove("attention");
   clearRedeemCode();
+  if (!getHero()) {
+    startHand();
+    showToast(fillTemplate(t("redeemSuccess"), { amount: money(amount) }));
+    return;
+  }
   render();
   showToast(fillTemplate(t("redeemSuccess"), { amount: money(amount) }));
 }
@@ -873,6 +884,11 @@ function addHeroChips(amount) {
     hero.startStack += amount;
   }
   saveBankrolls();
+  els.buyChips.classList.remove("attention");
+  if (!getHero()) {
+    startHand();
+    return;
+  }
   render();
 }
 
@@ -880,6 +896,19 @@ function openBuyDialog() {
   updateBuyPreview();
   els.buyStatus.textContent = "";
   els.buyDialog.showModal();
+}
+
+function heroChipsAvailable() {
+  const hero = getHero();
+  return Math.max(0, Number(hero?.stack ?? state.bankrolls.hero ?? 0));
+}
+
+function promptNoChips(openDialog = false) {
+  const message = t("buyToContinue");
+  els.status.textContent = message;
+  showToast(message);
+  els.buyChips.classList.add("attention");
+  if (openDialog) openBuyDialog();
 }
 
 function updateBuyPreview() {
@@ -1236,13 +1265,16 @@ function shuffle(cards) {
 
 function startHand() {
   saveCurrentStacks();
+  if (Math.max(0, Number(state.bankrolls.hero || 0)) <= 0) {
+    promptNoChips(true);
+    return;
+  }
   state.deck = createDeck();
   state.community = [];
   state.street = "preflop";
   state.result = null;
   state.resultSummary = "";
   state.showdownDetail = null;
-  state.settlementShown = false;
   state.resultDelta = 0;
   state.pot = 0;
   state.currentBet = baseBet;
@@ -1299,6 +1331,11 @@ function postBlind(player, amount) {
 function heroAction(action) {
   const hero = getHero();
   if (state.archived || state.street === "showdown" || hero.folded) return;
+  if (hero.stack <= 0) {
+    promptNoChips(true);
+    updateButtons();
+    return;
+  }
   const equity = estimateEquity(180);
   const potOdds = state.currentBet > hero.committed ? (state.currentBet - hero.committed) / (state.pot + state.currentBet - hero.committed) : 0;
   const heroEval = evaluateCards([...hero.cards, ...state.community]);
@@ -1415,6 +1452,28 @@ function describeHand(evalResult) {
   return `${evalResult.name}${cards}`;
 }
 
+function sameRankReason(winnerEval, loserEval, winnerName, loserName) {
+  const index = winnerEval.tiebreakers.findIndex((value, itemIndex) => value !== loserEval.tiebreakers[itemIndex]);
+  const winningValue = valueName(winnerEval.tiebreakers[index]);
+  const losingValue = valueName(loserEval.tiebreakers[index]);
+  const zh = state.lang === "zh";
+  const names = {
+    8: zh ? "同花顺顶张" : "straight flush high card",
+    7: index === 0 ? (zh ? "四条点数" : "quad rank") : zh ? "旁牌 kicker" : "side-card kicker",
+    6: index === 0 ? (zh ? "葫芦里的三条点数" : "full-house trips") : zh ? "葫芦里的对子点数" : "full-house pair",
+    5: zh ? "同花从最高牌往下逐张比较" : "flush cards from highest to lowest",
+    4: zh ? "顺子的顶张" : "straight high card",
+    3: index === 0 ? (zh ? "三条点数" : "trips rank") : zh ? "旁牌 kicker" : "kicker",
+    2: index === 0 ? (zh ? "较大对子" : "higher pair") : index === 1 ? (zh ? "较小对子" : "lower pair") : zh ? "旁牌 kicker" : "kicker",
+    1: index === 0 ? (zh ? "对子点数" : "pair rank") : zh ? "旁牌 kicker" : "kicker",
+    0: zh ? "高牌从最大牌往下逐张比较" : "high cards from highest to lowest",
+  };
+  const compared = names[winnerEval.category] || (zh ? "关键牌" : "deciding card");
+  return zh
+    ? `双方同为${winnerEval.name}，所以继续比较${compared}。${winnerName} 的 ${winningValue} 大于 ${loserName} 的 ${losingValue}，因此 ${winnerName} 赢得底池。`
+    : `Both players have ${winnerEval.name}, so the ${compared} decides it. ${winnerName}'s ${winningValue} beats ${loserName}'s ${losingValue}, so ${winnerName} wins the pot.`;
+}
+
 function comparisonReason(winnerEval, loserEval, winnerName, loserName, tie = false) {
   if (tie) {
     return state.lang === "zh"
@@ -1426,12 +1485,7 @@ function comparisonReason(winnerEval, loserEval, winnerName, loserName, tie = fa
       ? `${winnerName} 的最佳牌是${describeHand(winnerEval)}，${loserName} 的最佳牌是${describeHand(loserEval)}。${winnerEval.name} 高于 ${loserEval.name}，所以 ${winnerName} 赢得底池。`
       : `${winnerName}'s best hand is ${describeHand(winnerEval)}, while ${loserName} has ${describeHand(loserEval)}. ${winnerEval.name} ranks above ${loserEval.name}, so ${winnerName} wins the pot.`;
   }
-  const index = winnerEval.tiebreakers.findIndex((value, itemIndex) => value !== loserEval.tiebreakers[itemIndex]);
-  const winningValue = valueName(winnerEval.tiebreakers[index]);
-  const losingValue = valueName(loserEval.tiebreakers[index]);
-  return state.lang === "zh"
-    ? `双方同为${winnerEval.name}，继续比较主牌和 kicker。${winnerName} 的关键牌 ${winningValue} 大于 ${loserName} 的 ${losingValue}，所以 ${winnerName} 赢得底池。`
-    : `Both players have ${winnerEval.name}, so the main cards and kickers decide it. ${winnerName}'s deciding card ${winningValue} beats ${loserName}'s ${losingValue}, so ${winnerName} wins the pot.`;
+  return sameRankReason(winnerEval, loserEval, winnerName, loserName);
 }
 
 function archiveHand(result) {
@@ -1439,7 +1493,6 @@ function archiveHand(result) {
   state.archived = true;
   state.street = result === "folded" ? "folded" : state.street;
   state.result = result;
-  state.settlementShown = false;
   state.showdownDetail = null;
 
   let winner = getHero();
@@ -1549,6 +1602,7 @@ function archiveHand(result) {
   rememberHand(hands[0]);
   saveHands(hands);
   saveCurrentStacks();
+  if (getHero().stack <= 0) promptNoChips(false);
   renderHandList();
 }
 
@@ -1986,6 +2040,7 @@ function renderResult() {
     els.resultTitle.textContent = "";
     els.resultDelta.textContent = "";
     els.resultSummary.textContent = "";
+    if (els.settlementDetail) els.settlementDetail.hidden = true;
     return;
   }
   els.resultPanel.hidden = false;
@@ -2010,8 +2065,9 @@ function renderResult() {
         ? fillTemplate(t("netLose"), { amount: money(Math.abs(delta)) })
         : t("netEven");
   els.resultDelta.classList.toggle("loss", delta < 0);
-  els.resultSummary.textContent = state.resultSummary;
-  els.status.textContent = state.resultSummary;
+  const noChips = heroChipsAvailable() <= 0;
+  els.resultSummary.textContent = noChips ? `${state.resultSummary} ${t("noChipsHint")}` : state.resultSummary;
+  els.status.textContent = noChips ? t("buyToContinue") : state.resultSummary;
   renderSettlementDialog();
 }
 
@@ -2023,8 +2079,13 @@ function renderSettlementCards(target, cards) {
 }
 
 function renderSettlementDialog() {
-  if (!state.showdownDetail || state.settlementShown || !els.settlementDialog) return;
+  if (!els.settlementDetail) return;
+  if (!state.showdownDetail) {
+    els.settlementDetail.hidden = true;
+    return;
+  }
   const detail = state.showdownDetail;
+  els.settlementDetail.hidden = false;
   els.settlementHeadline.textContent = detail.tie ? t("splitHand") : `${detail.winner} ${state.lang === "zh" ? "获胜" : "wins"}`;
   els.settlementWinnerName.textContent = detail.tie ? detail.winners.join(" / ") : detail.winner;
   els.settlementLoserName.textContent = detail.tie ? detail.loser : detail.loser;
@@ -2041,8 +2102,6 @@ function renderSettlementDialog() {
   els.settlementDelta.classList.toggle("loss", delta < 0);
   renderSettlementCards(els.settlementWinnerCards, detail.winnerEval.cards);
   renderSettlementCards(els.settlementLoserCards, detail.loserEval.cards);
-  state.settlementShown = true;
-  els.settlementDialog.showModal();
 }
 
 function renderCards(target, cards, hidden, slots = cards.length) {
@@ -2269,12 +2328,14 @@ function setLeaderboardOpen(open) {
 function updateButtons() {
   const ended = state.archived || state.street === "showdown" || state.street === "folded";
   const hero = getHero();
+  const noChips = hero && hero.stack <= 0;
   const needsCall = hero && state.currentBet > hero.committed;
   const wager = money(state.selectedWager || 20);
-  els.fold.disabled = ended;
-  els.check.disabled = ended;
-  els.raise.disabled = ended;
-  els.nextStreet.disabled = ended;
+  els.fold.disabled = ended || noChips;
+  els.check.disabled = ended || noChips;
+  els.raise.disabled = ended || noChips;
+  els.nextStreet.disabled = ended || noChips;
+  els.buyChips.classList.toggle("attention", Boolean(noChips));
   els.check.textContent = needsCall
     ? state.lang === "zh"
       ? `跟注 ${money(state.currentBet - hero.committed)}`
