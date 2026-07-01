@@ -1,0 +1,14 @@
+{
+  "name": "grith-holdem-agent-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GRITH Hold'em packaged as a Reddit Devvit Web app.",
+  "scripts": {
+    "test": "node tests/poker-engine.test.js",
+    "devvit:prepare": "node scripts/prepare-devvit.js",
+    "devvit:login": "npx devvit login",
+    "devvit:playtest": "npm run devvit:prepare && npx devvit playtest",
+    "devvit:upload": "npm run devvit:prepare && npx devvit upload"
+  },
+  "devDependencies": {}
+}

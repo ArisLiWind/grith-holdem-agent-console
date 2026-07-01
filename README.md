@@ -102,6 +102,26 @@ For GitHub Pages, publish the repository root and set the entry file to `index.h
 
 For Vercel, deploy the `grith-cardgame` directory.
 
+## Reddit Devvit Deployment
+
+This project is now packaged as a Reddit Devvit Web app using the official Devvit Web `post` configuration. The Devvit bundle is generated into `public/`, with `index.html` as the tall custom post entrypoint.
+
+```bash
+cd grith-cardgame
+npm run devvit:prepare
+npx devvit login
+npx devvit playtest
+npx devvit upload
+```
+
+Notes:
+
+- `devvit.json` uses the app slug `grith-holdem`. If Reddit requires a different unique slug, change the `name` value in `devvit.json` before upload.
+- `public/` is generated and intentionally ignored by Git. `npx devvit upload` runs the configured build script before packaging.
+- The currently available `devvit@0.13.6` CLI exposes `playtest` and `upload`; it does not expose a standalone `build` command.
+- Core poker gameplay, mobile layout, music, hand evaluation, settlement display, and local state work inside the Devvit WebView.
+- Vercel-only API routes under `api/` remain available for the website deployment. Reddit Devvit upload currently packages the frontend game; server-side payments, WeChat OAuth, and Ark chat can be ported to a Devvit server entry in a later pass.
+
 Volcengine Ark chat needs these environment variables:
 
 ```text

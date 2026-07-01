@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "grith-holdem",
+  "post": {
+    "dir": "public",
+    "entrypoints": {
+      "default": {
+        "entry": "index.html",
+        "height": "tall"
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/prepare-devvit.js",
+    "dev": "node scripts/prepare-devvit.js --watch"
+  }
+}
