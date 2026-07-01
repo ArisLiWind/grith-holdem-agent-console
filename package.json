@@ -11,6 +11,11 @@
     "devvit:upload": "npm run devvit:prepare && npx devvit upload"
   },
   "devDependencies": {
-    "@devvit/public-api": "^0.13.6"
+    "@devvit/public-api": "^0.13.6",
+    "esbuild": "^0.25.12"
+  },
+  "dependencies": {
+    "@devvit/web": "^0.13.6",
+    "hono": "^4.12.27"
   }
 }

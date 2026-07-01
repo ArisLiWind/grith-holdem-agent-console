@@ -10,6 +10,21 @@
       }
     }
   },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.js"
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "创建 GRITH 牌桌",
+        "description": "创建一个可直接游玩的 GRITH™ Holdem Devvit 帖子",
+        "forUserType": "moderator",
+        "location": "subreddit",
+        "endpoint": "/internal/menu/create-table"
+      }
+    ]
+  },
   "scripts": {
     "build": "node scripts/prepare-devvit.js",
     "dev": "node scripts/prepare-devvit.js --watch"
