@@ -2,7 +2,6 @@
 
 GRITH Hold'em Agent Console is a static, browser-based Texas Hold'em table with a local AI-agent style decision console. It is designed as a playable product prototype: users can deal hands, read the board, ask for strategic advice, or let the assistant act for the hero seat.
 
-The poker table runs in the browser, with Vercel serverless API boundaries for redeem codes, payments, account storage, WeChat OAuth, and River Oracle chat. Secrets must stay in Vercel environment variables, never in frontend code.
 
 ## What It Does
 
