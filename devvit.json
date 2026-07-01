@@ -13,5 +13,8 @@
   "scripts": {
     "build": "node scripts/prepare-devvit.js",
     "dev": "node scripts/prepare-devvit.js --watch"
+  },
+  "dev": {
+    "subreddit": "grith_holdem_dev"
   }
 }
